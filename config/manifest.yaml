@@ -19,12 +19,9 @@ scenes:
       - url: "https://huggingface.co/city96/FLUX.1-dev-gguf/resolve/main/flux1-dev-Q8_0.gguf"
         path: "models/unet"
         name: "flux1-dev-Q8_0.gguf"
-      - url: "https://huggingface.co/comfyanonymous/flux_bundle/resolve/main/ae.safetensors"
-        path: "models/vae"
-        name: "ae.safetensors"
-      - url: "https://huggingface.co/comfyanonymous/flux_bundle/resolve/main/clip_l.safetensors"
+      - url: "https://huggingface.co/comfyanonymous/wd-1.5-beta2_unCLIP/resolve/main/wd-1-5-beta2-unclip-h-fp16.safetensors"
         path: "models/clip"
-        name: "clip_l.safetensors"
+        name: "wd-1-5-beta2-unclip-h-fp16.safetensors"
 
   portrait_photography:
     nodes:
