@@ -1,0 +1,41 @@
+# ComfyUI Commander Manifest
+# Use this to define your "Scenes" (Workflows groups)
+
+workflows_repo: "https://github.com/your-user/your-private-workflow-repo.git"
+
+# Define different scenes to optimize startup time
+# Each scene downloads only what it needs
+scenes:
+  flux_dev:
+    # Nodes to SYMLINK from /opt/nodes_pool/
+    # If not in pool, will be git cloned automatically
+    nodes:
+      - "ComfyUI-Manager"
+      - "ComfyUI-Impact-Pack"
+      - "https://github.com/city96/ComfyUI-GGUF.git"
+    
+    # Models to download via aria2c
+    models:
+      - url: "https://huggingface.co/city96/FLUX.1-dev-gguf/resolve/main/flux1-dev-Q8_0.gguf"
+        path: "models/unet"
+        name: "flux1-dev-Q8_0.gguf"
+      - url: "https://huggingface.co/comfyanonymous/flux_bundle/resolve/main/ae.safetensors"
+        path: "models/vae"
+        name: "ae.safetensors"
+      - url: "https://huggingface.co/comfyanonymous/flux_bundle/resolve/main/clip_l.safetensors"
+        path: "models/clip"
+        name: "clip_l.safetensors"
+
+  portrait_photography:
+    nodes:
+      - "ComfyUI-Manager"
+      - "ComfyUI-PhotoMaker"
+      - "https://github.com/ZHO-ZHO-ZHO/ComfyUI-PhotoMaker-ZHO.git"
+    models:
+      - url: "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors"
+        path: "models/checkpoints"
+        name: "sd_xl_base_1.0.safetensors"
+
+# Global settings
+global:
+  hf_token: "YOUR_HF_TOKEN_HERE" # Optional
