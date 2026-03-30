@@ -14,15 +14,16 @@ else
         echo "--- [INIT] Cloning ComfyUI Source ---"
         git clone https://github.com/comfyanonymous/ComfyUI /opt/ComfyUI
         $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-        $VENV_PYTHON -m pip install -r /opt/ComfyUI/requirements.txt
     fi
+    # 强制每次运行都校验核心依赖 (Always verify core requirements)
+    $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/requirements.txt
     # 确保 Python 业务逻辑运行所需的库
     $VENV_PYTHON -m pip install PyYAML requests
 fi
 
 function provisioning_start() {
     echo "--- [START] Provisioning Sequence ---"
-    # provisioning_install_manager
+    provisioning_install_manager
     provisioning_sync_github
     provisioning_run_manifest_logic
     echo "--- [END] Provisioning Sequence Finished ---"
@@ -65,16 +66,16 @@ function provisioning_sync_github() {
 function provisioning_run_manifest_logic() {
     echo "--- [JSON] Running Dynamic Asset Installer ---"
     
-    # 传递给 Python 部分的环境变量检测
-    $VENV_PYTHON - <<EOF
-import yaml, os, subprocess
+    # 使用引号保护的 EOF 阻止 Shell 盲目展开，内部使用 sys.executable 确保 100% 环境对齐
+    $VENV_PYTHON - <<'EOF'
+import yaml, os, subprocess, sys
 
 def run(cmd):
     print(f"Executing: {cmd}")
-    # 强制让内部调用也使用正确的 pip
+    # 强制让内部调用也使用 100% 一致的 Python 解释器
     if cmd.startswith("pip"):
-        cmd = f"$VENV_PYTHON -m {cmd}"
-    # subprocess.run doesn't throw by default unless check=True
+        # 使用 sys.executable 替代 $VENV_PYTHON 环境变量
+        cmd = f"\"{sys.executable}\" -m {cmd}"
     result = subprocess.run(cmd, shell=True)
     return result.returncode
 
@@ -89,30 +90,20 @@ with open(manifest_path, 'r') as f:
 scene_name = os.environ.get('SCENE', 'default')
 scene = manifest.get('scenes', {}).get(scene_name, {})
 
-if not scene and scene_name != 'default':
-    print(f"Scene '{scene_name}' not defined in manifest.")
-    exit(0)
-
 # 1. 资源合并 (Asset Merging)
-# 获取全局共享资源
 global_nodes = manifest.get('global', {}).get('nodes', [])
 global_models = manifest.get('global', {}).get('models', [])
+scene_nodes = scene.get('nodes', []) if scene else []
+scene_models = scene.get('models', []) if scene else []
 
-# 获取场景特定资源
-scene_nodes = scene.get('nodes', [])
-scene_models = scene.get('models', [])
-
-# 合并列表
 all_nodes = (global_nodes or []) + (scene_nodes or [])
 all_models = (global_models or []) + (scene_models or [])
 
 # 2. 自动安装插件节点 (Node Setup)
 for node in all_nodes:
     try:
-        url = ""
-        version = "main"
-        if isinstance(node, str):
-            url = node
+        url, version = "", "main"
+        if isinstance(node, str): url = node
         elif isinstance(node, dict):
             url = node.get('url')
             version = node.get('version', 'main')
@@ -121,46 +112,48 @@ for node in all_nodes:
             name = url.split("/")[-1].replace(".git", "")
             path = f"/opt/ComfyUI/custom_nodes/{name}"
             if not os.path.exists(path):
-                # 使用 -b 指定分支或标签
                 run(f"git clone -b {version} {url} {path}")
             
-            # 无论是否已克隆，都确保依赖已安装 (Always verify dependencies)
+            # 无论是否已克隆，都强制校验依赖 (Ensure deps are checked every time)
             if os.path.exists(f"{path}/requirements.txt"):
                 run(f"pip install --no-cache-dir -r {path}/requirements.txt")
     except Exception as e:
         print(f"Unexpected error for node {node}: {e}, skipping.")
 
-# 2. 自动下载模型 (Model Setup)
-# 整合优先级: 环境变量 > 清单定义
+# 3. 自动下载模型 (Model Setup)
 hf_token = os.environ.get('HF_TOKEN', manifest.get('global', {}).get('hf_token', ''))
 header = f'--header="Authorization: Bearer {hf_token}"' if hf_token else ''
 
 for model in all_models:
     try:
-        url = model.get('url')
-        name = model.get('name')
+        url, name = model.get('url'), model.get('name')
         dest_dir = f"/opt/ComfyUI/{model['path']}"
         os.makedirs(dest_dir, exist_ok=True)
-        
         if not os.path.exists(f"{dest_dir}/{name}"):
-            # 使用 aria2c 极速下载 (Colab 和 AI-Dock 均已在最外层脚本安装)
             cmd = f'aria2c -x16 -s16 -k1M -o "{name}" -d "{dest_dir}" {header} "{url}"'
-            ret = run(cmd)
-            if ret != 0:
-                print(f"⚠️ Failed to download {name} (Return code: {ret}). Continuing...")
+            run(cmd)
     except Exception as e:
-        print(f"❌ Unexpected error processing model {model.get('name', 'unknown')}: {e}. Skipping...")
+        print(f"❌ Error processing model {model.get('name', 'unknown')}: {e}")
 
-# 3. 同步工作流 (Workflow Sync)
+# 4. 同步工作流 (Workflow Sync)
 workflow_repo_path = "/opt/workflows"
 if os.path.exists(workflow_repo_path):
     dest = "/opt/ComfyUI/user/default/workflows"
     os.makedirs(dest, exist_ok=True)
-    # 优先查找 workflows 子目录
     src = f"{workflow_repo_path}/workflows" if os.path.exists(f"{workflow_repo_path}/workflows") else workflow_repo_path
     print(f"--- [SYNC] Syncing workflows from {src} to {dest} ---")
     run(f"cp -v {src}/*.json {dest}/ 2>/dev/null || true")
+
+# 5. 最终路径审计 (Final Path Audit)
+print("\n--- [AUDIT] Custom Nodes Contents ---")
+if os.path.exists("/opt/ComfyUI/custom_nodes"):
+    print(os.listdir("/opt/ComfyUI/custom_nodes"))
+else:
+    print("WARNING: /opt/ComfyUI/custom_nodes NOT FOUND")
 EOF
+
+    # 最终汇总
+    echo "--- [AUDIT] System Check Finished ---"
 }
 
 # 执行主流程
