@@ -2,25 +2,21 @@
 # --- AI-Dock 2.0+ Provisioning Script (Production Version v1.1) ---
 # Optimized for: ghcr.io/ai-dock/comfyui:latest-cuda
 
-# 环境变量增强：确保 Python 路径绝对正确
 VENV_PYTHON="/opt/environments/python/comfyui/bin/python3"
 
 function provisioning_start() {
     echo "--- ComfyUI Commander Boot Sequence ---"
     
-    # 0. 核心依赖检查：若无 aria2c 则自动安装 (解决 /bin/sh: 1: aria2c: not found)
     if ! command -v aria2c &> /dev/null; then
         echo "Aria2c not found. Installing for high-speed downloads..."
-        apt-get update && apt-get install -y aria2
+        # apt-get update && apt-get install -y aria2
+        apt-get install -y aria2
     fi
 
-    # 1. 激活虚拟环境
     source /opt/ai-dock/bin/venv-set.sh comfyui
     
-    # 2. 同步云端资源
     provisioning_sync_github
     
-    # 3. 动态加载资源
     provisioning_run_manifest_logic
     
     echo "--- Provisioning Sequence Finished ---"
@@ -29,12 +25,10 @@ function provisioning_start() {
 function provisioning_sync_github() {
     echo "--- Step 1: Syncing Logic & Workflows ---"
     
-    # 获取 manifest.yaml
     if [ ! -z "$MANIFEST_URL" ]; then
         curl -sL "$MANIFEST_URL" > /opt/manifest.yaml
     fi
 
-    # 智能同步工作流：若已存在则拉取更新，不存在则克隆
     if [ ! -z "$WORKFLOWS_REPO" ]; then
         if [ -d "/opt/workflows/.git" ]; then
             echo "Workflows directory exists, pulling updates..."
@@ -78,7 +72,6 @@ if not scene:
     print(f"Scene '{scene_name}' not found.")
     exit(0)
 
-# 自动处理节点插件
 for node in scene.get('nodes', []):
     if node.startswith("http"):
         name = node.split("/")[-1].replace(".git", "")
@@ -88,7 +81,6 @@ for node in scene.get('nodes', []):
             if os.path.exists(f"{path}/requirements.txt"):
                 run(f"pip install --no-cache-dir -r {path}/requirements.txt")
 
-# 自动处理模型下载 (使用已安装的 aria2c)
 hf_token = os.environ.get('HF_TOKEN', manifest.get('global', {}).get('hf_token', ''))
 header = f'--header="Authorization: Bearer {hf_token}"' if hf_token else ''
 
@@ -105,5 +97,4 @@ for model in scene.get('models', []):
 EOF
 }
 
-# 终极启动
 provisioning_start
