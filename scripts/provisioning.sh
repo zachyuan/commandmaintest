@@ -9,7 +9,7 @@ function provisioning_start() {
     echo "--- ComfyUI Commander Boot Sequence ---"
     
     # 0. 核心插件安装：ComfyUI-Manager
-    provisioning_install_manager
+    # provisioning_install_manager
 
     # 1. 核心依赖检查：若无 aria2c 则自动安装 (解决 /bin/sh: 1: aria2c: not found)
     if ! command -v aria2c &> /dev/null; then
