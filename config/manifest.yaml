@@ -68,7 +68,7 @@ scenes:
   BiRefNet:
     nodes:
     # - "https://github.com/zohac/ComfyUI_ZC_DrawShape" # CR Draw Shape
-    # - "https://github.com/rgthree/rgthree-comfy" # Fast Groups Bypasser (rgthree)
+    - "https://github.com/rgthree/rgthree-comfy" # Fast Groups Bypasser (rgthree)
     # - "https://github.com/Auttasak-L/ComfyUI-ImageCropper" # Image Crop Location
     # - "https://github.com/zhangp365/ComfyUI-utils-nodes" # ImageCompositeMasked
     # - "https://github.com/if-ai/ComfyUI_IF_AI_LoadImages" # LoadImage
