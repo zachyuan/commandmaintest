@@ -97,7 +97,16 @@ global:
 
   # Shared nodes for ALL scenes
   nodes:
-    - "https://github.com/Comfy-Org/ComfyUI-Manager.git"
+    - "https://github.com/Comfy-Org/ComfyUI-Manager.git" 
+    - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" 
+    - "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
+    - "https://github.com/rgthree/rgthree-comfy.git" 
+    - "https://github.com/cubiq/ComfyUI_essentials.git" 
+    - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git" 
+    - "https://github.com/crystian/ComfyUI-Crystools.git" 
+    - "https://github.com/yolain/ComfyUI-Easy-Use.git" 
+    - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git" 
+    - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
 
   # Shared models for ALL scenes
   models:
