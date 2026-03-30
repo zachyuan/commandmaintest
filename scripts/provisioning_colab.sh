@@ -79,19 +79,33 @@ with open(manifest_path, 'r') as f:
 scene_name = os.environ.get('SCENE', 'default')
 scene = manifest.get('scenes', {}).get(scene_name, {})
 
-if not scene:
+if not scene and scene_name != 'default':
     print(f"Scene '{scene_name}' not defined in manifest.")
     exit(0)
 
-# 1. 自动安装插件节点 (Node Setup)
-for node in scene.get('nodes', []):
+# 1. 资源合并 (Asset Merging)
+# 获取全局共享资源
+global_nodes = manifest.get('global', {}).get('nodes', [])
+global_models = manifest.get('global', {}).get('models', [])
+
+# 获取场景特定资源
+scene_nodes = scene.get('nodes', [])
+scene_models = scene.get('models', [])
+
+# 合并列表
+all_nodes = global_nodes + scene_nodes
+all_models = global_models + scene_models
+
+# 2. 自动安装插件节点 (Node Setup)
+for node in all_nodes:
     try:
-        name = node.split("/")[-1].replace(".git", "")
-        path = f"/opt/ComfyUI/custom_nodes/{name}"
-        if not os.path.exists(path):
-            ret = run(f"git clone {node} {path}")
-            if ret == 0 and os.path.exists(f"{path}/requirements.txt"):
-                run(f"pip install --no-cache-dir -r {path}/requirements.txt")
+        if node.startswith("http"):
+            name = node.split("/")[-1].replace(".git", "")
+            path = f"/opt/ComfyUI/custom_nodes/{name}"
+            if not os.path.exists(path):
+                ret = run(f"git clone {node} {path}")
+                if ret == 0 and os.path.exists(f"{path}/requirements.txt"):
+                    run(f"pip install --no-cache-dir -r {path}/requirements.txt")
     except Exception as e:
         print(f"Unexpected error for node {node}: {e}, skipping.")
 
@@ -100,7 +114,7 @@ for node in scene.get('nodes', []):
 hf_token = os.environ.get('HF_TOKEN', manifest.get('global', {}).get('hf_token', ''))
 header = f'--header="Authorization: Bearer {hf_token}"' if hf_token else ''
 
-for model in scene.get('models', []):
+for model in all_models:
     try:
         url = model.get('url')
         name = model.get('name')
@@ -114,7 +128,7 @@ for model in scene.get('models', []):
             if ret != 0:
                 print(f"⚠️ Failed to download {name} (Return code: {ret}). Continuing...")
     except Exception as e:
-        print(f"❌ Unexpected error processing model {model.get('name')}: {e}. Skipping...")
+        print(f"❌ Unexpected error processing model {model.get('name', 'unknown')}: {e}. Skipping...")
 
 # 3. 同步工作流 (Workflow Sync)
 workflow_repo_path = "/opt/workflows"

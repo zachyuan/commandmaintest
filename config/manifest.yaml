@@ -10,7 +10,6 @@ scenes:
     # Nodes to SYMLINK from /opt/nodes_pool/
     # If not in pool, will be git cloned automatically
     nodes:
-      - "https://github.com/Comfy-Org/ComfyUI-Manager.git"
       # - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
       # - "https://github.com/city96/ComfyUI-GGUF.git"
     
@@ -19,16 +18,12 @@ scenes:
       # - url: "https://huggingface.co/city96/FLUX.1-dev-gguf/resolve/main/flux1-dev-Q8_0.gguf"
         # path: "models/unet"
         # name: "flux1-dev-Q8_0.gguf"
-      - url: "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
-        path: "models/checkpoints"
-        name: "v1-5-pruned-emaonly.safetensors"
       - url: "https://huggingface.co/comfyanonymous/wd-1.5-beta2_unCLIP/resolve/main/wd-1-5-beta2-unclip-h-fp16.safetensors"
         path: "models/clip"
         name: "wd-1-5-beta2-unclip-h-fp16.safetensors"
 
   portrait_photography:
     nodes:
-      - "ComfyUI-Manager"
       - "ComfyUI-PhotoMaker"
       - "https://github.com/ZHO-ZHO-ZHO/ComfyUI-PhotoMaker-ZHO.git"
     models:
@@ -99,4 +94,13 @@ scenes:
 
 # Global settings
 global:
-  hf_token: "YOUR_HF_TOKEN_HERE" # Optional
+
+  # Shared nodes for ALL scenes
+  nodes:
+    - "https://github.com/Comfy-Org/ComfyUI-Manager.git"
+
+  # Shared models for ALL scenes
+  models:
+    - url: "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
+      path: "models/checkpoints"
+      name: "v1-5-pruned-emaonly.safetensors"

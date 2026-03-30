@@ -71,11 +71,25 @@ with open(manifest_path, 'r') as f:
 scene_name = os.environ.get('SCENE', 'default')
 scene = manifest.get('scenes', {}).get(scene_name)
 
-if not scene:
+if not scene and scene_name != 'default':
     print(f"Scene '{scene_name}' not found.")
     exit(0)
 
-for node in scene.get('nodes', []):
+# 1. 资源合并 (Asset Merging)
+# 获取全局共享资源
+global_nodes = manifest.get('global', {}).get('nodes', [])
+global_models = manifest.get('global', {}).get('models', [])
+
+# 获取场景特定资源
+scene_nodes = scene.get('nodes', []) if scene else []
+scene_models = scene.get('models', []) if scene else []
+
+# 合并列表
+all_nodes = global_nodes + scene_nodes
+all_models = global_models + scene_models
+
+# 2. 自动处理节点插件 (Node Setup)
+for node in all_nodes:
     try:
         if node.startswith("http"):
             name = node.split("/")[-1].replace(".git", "")
@@ -90,7 +104,7 @@ for node in scene.get('nodes', []):
 hf_token = os.environ.get('HF_TOKEN', manifest.get('global', {}).get('hf_token', ''))
 header = f'--header="Authorization: Bearer {hf_token}"' if hf_token else ''
 
-for model in scene.get('models', []):
+for model in all_models:
     try:
         url = model.get('url')
         rel_path = model.get('path')
@@ -104,7 +118,7 @@ for model in scene.get('models', []):
             if ret != 0:
                  print(f"⚠️ Failed to download {name} (Return code: {ret}). Continuing...")
     except Exception as e:
-        print(f"❌ Unexpected error processing model {model.get('name')}: {e}. Skipping...")
+        print(f"❌ Unexpected error processing model {model.get('name', 'unknown')}: {e}. Skipping...")
 
 # 3. 同步工作流 (Workflow Sync)
 # 将 cloned 的 workflows 拷贝到 ComfyUI 内部目录，解决 UI 中工作流为空的问题
