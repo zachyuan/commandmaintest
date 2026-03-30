@@ -1,7 +1,7 @@
 # ComfyUI Commander Manifest
 # Use this to define your "Scenes" (Workflows groups)
 
-workflows_repo: "https://github.com/your-user/your-private-workflow-repo.git"
+workflows_repo: "https://github.com/zachyuan/sync_docker.git"
 
 # Define different scenes to optimize startup time
 # Each scene downloads only what it needs
