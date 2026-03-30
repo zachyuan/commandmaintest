@@ -67,16 +67,16 @@ scenes:
 
   BiRefNet:
     nodes:
-    - "https://github.com/zohac/ComfyUI_ZC_DrawShape" # CR Draw Shape
-    - "https://github.com/rgthree/rgthree-comfy" # Fast Groups Bypasser (rgthree)
-    - "https://github.com/Auttasak-L/ComfyUI-ImageCropper" # Image Crop Location
-    - "https://github.com/zhangp365/ComfyUI-utils-nodes" # ImageCompositeMasked
-    - "https://github.com/if-ai/ComfyUI_IF_AI_LoadImages" # LoadImage
-    - "https://github.com/longgui0318/comfyui-mask-util" # Mask Crop Region
-    - "https://github.com/meshmesh-io/mm-comfyui-megamask" # MaskToImage
-    - "https://github.com/MitoshiroPJ/ComfyUI_save_image_sdli" # SaveImage
-    - "https://github.com/silveroxides/ComfyUI_Gemini_Expanded_API" # TTP_Expand_And_Mask
-    - "https://github.com/WASasquatch/ComfyUI_LMStudio_EasyQuery" # easy imageRemBg
+    # - "https://github.com/zohac/ComfyUI_ZC_DrawShape" # CR Draw Shape
+    # - "https://github.com/rgthree/rgthree-comfy" # Fast Groups Bypasser (rgthree)
+    # - "https://github.com/Auttasak-L/ComfyUI-ImageCropper" # Image Crop Location
+    # - "https://github.com/zhangp365/ComfyUI-utils-nodes" # ImageCompositeMasked
+    # - "https://github.com/if-ai/ComfyUI_IF_AI_LoadImages" # LoadImage
+    # - "https://github.com/longgui0318/comfyui-mask-util" # Mask Crop Region
+    # - "https://github.com/meshmesh-io/mm-comfyui-megamask" # MaskToImage
+    # - "https://github.com/MitoshiroPJ/ComfyUI_save_image_sdli" # SaveImage
+    # - "https://github.com/silveroxides/ComfyUI_Gemini_Expanded_API" # TTP_Expand_And_Mask
+    # - "https://github.com/WASasquatch/ComfyUI_LMStudio_EasyQuery" # easy imageRemBg
   models:
     - url: "https://huggingface.co/models?search=BiRefNet-General"
       path: "models/checkpoints"
