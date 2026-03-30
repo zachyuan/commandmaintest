@@ -10,9 +10,9 @@ scenes:
     # Nodes to SYMLINK from /opt/nodes_pool/
     # If not in pool, will be git cloned automatically
     nodes:
-      - "ComfyUI-Manager"
-      - "ComfyUI-Impact-Pack"
-      - "https://github.com/city96/ComfyUI-GGUF.git"
+      - "https://github.com/Comfy-Org/ComfyUI-Manager.git"
+      - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
+      # - "https://github.com/city96/ComfyUI-GGUF.git"
     
     # Models to download via aria2c
     models:
