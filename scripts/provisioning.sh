@@ -8,7 +8,7 @@ function provisioning_start() {
     echo "--- ComfyUI Commander Boot Sequence ---"
 
     # ComfyUI-Manager
-    provisioning_install_manager
+    # provisioning_install_manager
     
     if ! command -v aria2c &> /dev/null; then
         echo "Aria2c not found. Installing for high-speed downloads..."
@@ -29,8 +29,9 @@ function provisioning_install_manager() {
     if [ ! -d "/opt/ComfyUI/custom_nodes/ComfyUI-Manager" ]; then
         echo "--- [INIT] Installing ComfyUI-Manager ---"
         git clone https://github.com/ltdrdata/ComfyUI-Manager /opt/ComfyUI/custom_nodes/ComfyUI-Manager
-        $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
     fi
+    # 强制每次运行都校验核心插件依赖 (Ensure requirements always installed)
+    $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
 }
 
 function provisioning_sync_github() {
@@ -115,9 +116,11 @@ for node in all_nodes:
             path = f"/opt/ComfyUI/custom_nodes/{name}"
             if not os.path.exists(path):
                 # 使用 -b 指定分支或标签
-                ret = run(f"git clone -b {version} {url} {path}")
-                if ret == 0 and os.path.exists(f"{path}/requirements.txt"):
-                    run(f"pip install --no-cache-dir -r {path}/requirements.txt")
+                run(f"git clone -b {version} {url} {path}")
+            
+            # 无论是否已克隆，都确保依赖已安装 (Always verify dependencies)
+            if os.path.exists(f"{path}/requirements.txt"):
+                run(f"pip install --no-cache-dir -r {path}/requirements.txt")
     except Exception as e:
         print(f"Unexpected error for node {node}: {e}, skipping.")
 
