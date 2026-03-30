@@ -77,10 +77,10 @@ scenes:
     # - "https://github.com/MitoshiroPJ/ComfyUI_save_image_sdli" # SaveImage
     # - "https://github.com/silveroxides/ComfyUI_Gemini_Expanded_API" # TTP_Expand_And_Mask
     # - "https://github.com/WASasquatch/ComfyUI_LMStudio_EasyQuery" # easy imageRemBg
-  models:
-    - url: "https://huggingface.co/models?search=BiRefNet-General"
-      path: "models/checkpoints"
-      name: "BiRefNet-General"
+    models:
+      - url: "https://huggingface.co/models?search=BiRefNet-General"
+        path: "models/checkpoints"
+        name: "BiRefNet-General"
 
 # Global settings
 global:
