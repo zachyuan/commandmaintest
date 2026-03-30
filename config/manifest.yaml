@@ -36,6 +36,7 @@ scenes:
       - "https://github.com/ronniebasak/ComfyUI-Tara-LLM-Integration.git" # comfyui-tara-llm-integration
       - "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git" # comfyui_ipadapter_plus
       - "https://github.com/huchenlei/ComfyUI-IC-Light.git" # huchenlei/ComfyUI-IC-Light
+      - "https://github.com/huchenlei/ComfyUI-IC-Light-Native.git"
     models:
     - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"
       path: "models/clip_vision"
