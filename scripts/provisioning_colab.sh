@@ -23,7 +23,7 @@ fi
 
 function provisioning_start() {
     echo "--- [START] Provisioning Sequence ---"
-    provisioning_install_manager
+    # provisioning_install_manager
     provisioning_sync_github
     provisioning_run_manifest_logic
     echo "--- [END] Provisioning Sequence Finished ---"
