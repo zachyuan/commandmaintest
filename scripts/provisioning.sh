@@ -55,7 +55,10 @@ def run(cmd):
     print(f"Executing: {cmd}")
     if cmd.startswith("pip"):
         cmd = f"$VENV_PYTHON -m {cmd}"
-    subprocess.run(cmd, shell=True)
+    # subprocess.run doesn't throw by default unless check=True
+    # We explicitly check returncode if we want to log errors
+    result = subprocess.run(cmd, shell=True)
+    return result.returncode
 
 manifest_path = "/opt/manifest.yaml"
 if not os.path.exists(manifest_path):
@@ -73,27 +76,47 @@ if not scene:
     exit(0)
 
 for node in scene.get('nodes', []):
-    if node.startswith("http"):
-        name = node.split("/")[-1].replace(".git", "")
-        path = f"/opt/ComfyUI/custom_nodes/{name}"
-        if not os.path.exists(path):
-            run(f"git clone {node} {path}")
-            if os.path.exists(f"{path}/requirements.txt"):
-                run(f"pip install --no-cache-dir -r {path}/requirements.txt")
+    try:
+        if node.startswith("http"):
+            name = node.split("/")[-1].replace(".git", "")
+            path = f"/opt/ComfyUI/custom_nodes/{name}"
+            if not os.path.exists(path):
+                ret = run(f"git clone {node} {path}")
+                if ret == 0 and os.path.exists(f"{path}/requirements.txt"):
+                    run(f"pip install --no-cache-dir -r {path}/requirements.txt")
+    except Exception as e:
+        print(f"Unexpected error for node {node}: {e}, skipping.")
 
 hf_token = os.environ.get('HF_TOKEN', manifest.get('global', {}).get('hf_token', ''))
 header = f'--header="Authorization: Bearer {hf_token}"' if hf_token else ''
 
 for model in scene.get('models', []):
-    url = model.get('url')
-    rel_path = model.get('path')
-    name = model.get('name')
-    dest_dir = f"/opt/ComfyUI/{rel_path}"
-    os.makedirs(dest_dir, exist_ok=True)
-    
-    if not os.path.exists(f"{dest_dir}/{name}"):
-        cmd = f'aria2c -x16 -s16 -k1M -o "{name}" -d "{dest_dir}" {header} "{url}"'
-        run(cmd)
+    try:
+        url = model.get('url')
+        rel_path = model.get('path')
+        name = model.get('name')
+        dest_dir = f"/opt/ComfyUI/{rel_path}"
+        os.makedirs(dest_dir, exist_ok=True)
+        
+        if not os.path.exists(f"{dest_dir}/{name}"):
+            cmd = f'aria2c -x16 -s16 -k1M -o "{name}" -d "{dest_dir}" {header} "{url}"'
+            ret = run(cmd)
+            if ret != 0:
+                 print(f"⚠️ Failed to download {name} (Return code: {ret}). Continuing...")
+    except Exception as e:
+        print(f"❌ Unexpected error processing model {model.get('name')}: {e}. Skipping...")
+
+# 3. 同步工作流 (Workflow Sync)
+# 将 cloned 的 workflows 拷贝到 ComfyUI 内部目录，解决 UI 中工作流为空的问题
+workflow_repo_path = "/opt/workflows"
+if os.path.exists(workflow_repo_path):
+    dest = "/opt/ComfyUI/user/default/workflows"
+    os.makedirs(dest, exist_ok=True)
+    # 尝试查找 workflows 子目录，若无则使用仓库根目录
+    src = f"{workflow_repo_path}/workflows" if os.path.exists(f"{workflow_repo_path}/workflows") else workflow_repo_path
+    print(f"--- [SYNC] Syncing workflows from {src} to {dest} ---")
+    # 使用 cp 命令批量拷贝
+    run(f"cp -v {src}/*.json {dest}/ 2>/dev/null || true")
 EOF
 }
 
