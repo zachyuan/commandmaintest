@@ -33,10 +33,12 @@ scenes:
 
   versatile-sd:
     nodes:
+      - url: "https://github.com/yolain/ComfyUI-Easy-Use.git"
+        version: "v1.3.6" # comfyui-easy-use
       - "https://github.com/ronniebasak/ComfyUI-Tara-LLM-Integration.git" # comfyui-tara-llm-integration
+      - "https://github.com/Fannovel16/comfyui_controlnet_aux.git" # comfyui_controlnet_aux
       - "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git" # comfyui_ipadapter_plus
       - "https://github.com/huchenlei/ComfyUI-IC-Light.git" # huchenlei/ComfyUI-IC-Light
-      - "https://github.com/huchenlei/ComfyUI-IC-Light-Native.git"
     models:
     - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"
       path: "models/clip_vision"
@@ -63,21 +65,38 @@ scenes:
       path: "models/controlnet"
       name: "mistoLine_rank256.safetensors"
 
+  BiRefNet:
+    nodes:
+    # - "https://github.com/zohac/ComfyUI_ZC_DrawShape" # CR Draw Shape
+    # - "https://github.com/rgthree/rgthree-comfy" # Fast Groups Bypasser (rgthree)
+    # - "https://github.com/Auttasak-L/ComfyUI-ImageCropper" # Image Crop Location
+    # - "https://github.com/zhangp365/ComfyUI-utils-nodes" # ImageCompositeMasked
+    # - "https://github.com/if-ai/ComfyUI_IF_AI_LoadImages" # LoadImage
+    # - "https://github.com/longgui0318/comfyui-mask-util" # Mask Crop Region
+    # - "https://github.com/meshmesh-io/mm-comfyui-megamask" # MaskToImage
+    # - "https://github.com/MitoshiroPJ/ComfyUI_save_image_sdli" # SaveImage
+    # - "https://github.com/silveroxides/ComfyUI_Gemini_Expanded_API" # TTP_Expand_And_Mask
+    # - "https://github.com/WASasquatch/ComfyUI_LMStudio_EasyQuery" # easy imageRemBg
+  models:
+    - url: "https://huggingface.co/models?search=BiRefNet-General"
+      path: "models/checkpoints"
+      name: "BiRefNet-General"
+
 # Global settings
 global:
 
   # Shared nodes for ALL scenes
   nodes:
     - "https://github.com/Comfy-Org/ComfyUI-Manager.git" 
-    - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" 
-    - "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
+    # - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" 
+    # - "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
     - "https://github.com/rgthree/rgthree-comfy.git" 
     - "https://github.com/cubiq/ComfyUI_essentials.git" 
-    - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git" 
+    # - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git" 
     - "https://github.com/crystian/ComfyUI-Crystools.git" 
-    - "https://github.com/yolain/ComfyUI-Easy-Use.git" 
-    - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git" 
-    - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
+    # - "https://github.com/yolain/ComfyUI-Easy-Use.git" 
+    # - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git" 
+    # - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
 
   # Shared models for ALL scenes
   models:
