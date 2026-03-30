@@ -33,36 +33,34 @@ scenes:
 
   versatile-sd:
     nodes:
-      - "https://github.com/yolain/ComfyUI-Easy-Use.git" # comfyui-easy-use
       - "https://github.com/ronniebasak/ComfyUI-Tara-LLM-Integration.git" # comfyui-tara-llm-integration
-      - "https://github.com/Fannovel16/comfyui_controlnet_aux.git" # comfyui_controlnet_aux
-      - "https://github.com/cubiq/ComfyUI_essentials.git" # comfyui_essentials
       - "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git" # comfyui_ipadapter_plus
+      - "https://github.com/huchenlei/ComfyUI-IC-Light.git" # huchenlei/ComfyUI-IC-Light
     models:
-      - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"
-        path: "models/checkpoints"
-        name: "CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors"
-      - url: "https://huggingface.co/Lykon/dreamshaper-xl-lightning/resolve/main/DreamShaperXL_Lightning.safetensors?download=true"
-        path: "models/checkpoints"
-        name: "DreamShaperXL_Lightning.safetensors"
-      - url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors?download=true"
-        path: "models/checkpoints"
-        name: "DreamShaper_8_pruned.safetensors"
-      - url: "https://civitai.com/api/download/models/135867?type=Model&format=SafeTensor"
-        path: "models/checkpoints"
-        name: "add-detail-xl.safetensors"
-      - url: "https://civitai.com/api/download/models/450187"
-        path: "models/checkpoints"
-        name: "dreamshaperXL_lightningInpaint.safetensors"
-      - url: "https://huggingface.co/huchenlei/IC-Light-ldm/resolve/main/iclight_sd15_fbc_unet_ldm.safetensors?download=true"
-        path: "models/unet"
-        name: "iclight_sd15_fbc_unet_ldm.safetensors"
-      - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"
-        path: "models/checkpoints"
-        name: "ip-adapter_sdxl.safetensors"
-      - url: "https://huggingface.co/TheMistoAI/MistoLine/resolve/main/mistoLine_rank256.safetensors?download=true"
-        path: "models/checkpoints"
-        name: "mistoLine_rank256.safetensors"
+    - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"
+      path: "models/clip_vision"
+      name: "CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors"
+    - url: "https://huggingface.co/Lykon/dreamshaper-xl-lightning/resolve/main/DreamShaperXL_Lightning.safetensors?download=true"
+      path: "models/checkpoints"
+      name: "DreamShaperXL_Lightning.safetensors"
+    - url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors?download=true"
+      path: "models/checkpoints"
+      name: "DreamShaper_8_pruned.safetensors"
+    - url: "https://civitai.com/api/download/models/135867?type=Model&format=SafeTensor"
+      path: "models/loras"
+      name: "add-detail-xl.safetensors"
+    - url: "https://civitai.com/api/download/models/450187"
+      path: "models/checkpoints"
+      name: "dreamshaperXL_lightningInpaint.safetensors"
+    - url: "https://huggingface.co/huchenlei/IC-Light-ldm/resolve/main/iclight_sd15_fbc_unet_ldm.safetensors?download=true"
+      path: "models/unet"
+      name: "iclight_sd15_fbc_unet_ldm.safetensors"
+    - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"
+      path: "models/ipadapter"
+      name: "ip-adapter_sdxl.safetensors"
+    - url: "https://huggingface.co/TheMistoAI/MistoLine/resolve/main/mistoLine_rank256.safetensors?download=true"
+      path: "models/controlnet"
+      name: "mistoLine_rank256.safetensors"
 
 # Global settings
 global:
