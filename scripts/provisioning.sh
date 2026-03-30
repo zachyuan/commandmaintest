@@ -85,8 +85,8 @@ scene_nodes = scene.get('nodes', []) if scene else []
 scene_models = scene.get('models', []) if scene else []
 
 # 合并列表
-all_nodes = global_nodes + scene_nodes
-all_models = global_models + scene_models
+all_nodes = (global_nodes or []) + (scene_nodes or [])
+all_models = (global_models or []) + (scene_models or [])
 
 # 2. 自动处理节点插件 (Node Setup)
 for node in all_nodes:
