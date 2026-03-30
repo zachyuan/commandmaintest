@@ -33,10 +33,12 @@ scenes:
 
   versatile-sd:
     nodes:
+      - url: "https://github.com/yolain/ComfyUI-Easy-Use.git"
+        version: "v1.3.6" # comfyui-easy-use
       - "https://github.com/ronniebasak/ComfyUI-Tara-LLM-Integration.git" # comfyui-tara-llm-integration
+      - "https://github.com/Fannovel16/comfyui_controlnet_aux.git" # comfyui_controlnet_aux
       - "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git" # comfyui_ipadapter_plus
       - "https://github.com/huchenlei/ComfyUI-IC-Light.git" # huchenlei/ComfyUI-IC-Light
-      - "https://github.com/huchenlei/ComfyUI-IC-Light-Native.git"
     models:
     - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"
       path: "models/clip_vision"
@@ -69,15 +71,15 @@ global:
   # Shared nodes for ALL scenes
   nodes:
     - "https://github.com/Comfy-Org/ComfyUI-Manager.git" 
-    - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" 
-    - "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
+    # - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" 
+    # - "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
     - "https://github.com/rgthree/rgthree-comfy.git" 
     - "https://github.com/cubiq/ComfyUI_essentials.git" 
-    - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git" 
+    # - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git" 
     - "https://github.com/crystian/ComfyUI-Crystools.git" 
-    - "https://github.com/yolain/ComfyUI-Easy-Use.git" 
-    - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git" 
-    - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
+    # - "https://github.com/yolain/ComfyUI-Easy-Use.git" 
+    # - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git" 
+    # - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
 
   # Shared models for ALL scenes
   models:

@@ -91,11 +91,20 @@ all_models = global_models + scene_models
 # 2. 自动处理节点插件 (Node Setup)
 for node in all_nodes:
     try:
-        if node.startswith("http"):
-            name = node.split("/")[-1].replace(".git", "")
+        url = ""
+        version = "main"
+        if isinstance(node, str):
+            url = node
+        elif isinstance(node, dict):
+            url = node.get('url')
+            version = node.get('version', 'main')
+            
+        if url and url.startswith("http"):
+            name = url.split("/")[-1].replace(".git", "")
             path = f"/opt/ComfyUI/custom_nodes/{name}"
             if not os.path.exists(path):
-                ret = run(f"git clone {node} {path}")
+                # 使用 -b 指定分支或标签
+                ret = run(f"git clone -b {version} {url} {path}")
                 if ret == 0 and os.path.exists(f"{path}/requirements.txt"):
                     run(f"pip install --no-cache-dir -r {path}/requirements.txt")
     except Exception as e:
