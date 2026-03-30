@@ -6,6 +6,9 @@ VENV_PYTHON="/opt/environments/python/comfyui/bin/python3"
 
 function provisioning_start() {
     echo "--- ComfyUI Commander Boot Sequence ---"
+
+    # ComfyUI-Manager
+    provisioning_install_manager
     
     if ! command -v aria2c &> /dev/null; then
         echo "Aria2c not found. Installing for high-speed downloads..."
@@ -20,6 +23,14 @@ function provisioning_start() {
     provisioning_run_manifest_logic
     
     echo "--- Provisioning Sequence Finished ---"
+}
+
+function provisioning_install_manager() {
+    if [ ! -d "/opt/ComfyUI/custom_nodes/ComfyUI-Manager" ]; then
+        echo "--- [INIT] Installing ComfyUI-Manager ---"
+        git clone https://github.com/ltdrdata/ComfyUI-Manager /opt/ComfyUI/custom_nodes/ComfyUI-Manager
+        $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
+    fi
 }
 
 function provisioning_sync_github() {

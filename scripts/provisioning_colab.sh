@@ -22,9 +22,18 @@ fi
 
 function provisioning_start() {
     echo "--- [START] Provisioning Sequence ---"
+    provisioning_install_manager
     provisioning_sync_github
     provisioning_run_manifest_logic
     echo "--- [END] Provisioning Sequence Finished ---"
+}
+
+function provisioning_install_manager() {
+    if [ ! -d "/opt/ComfyUI/custom_nodes/ComfyUI-Manager" ]; then
+        echo "--- [INIT] Installing ComfyUI-Manager ---"
+        git clone https://github.com/ltdrdata/ComfyUI-Manager /opt/ComfyUI/custom_nodes/ComfyUI-Manager
+        $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
+    fi
 }
 
 function provisioning_sync_github() {
