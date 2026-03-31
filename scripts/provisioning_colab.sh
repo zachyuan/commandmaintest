@@ -8,29 +8,36 @@ export COMFYUI_DIR="/opt/ComfyUI"
 export VENV_DIR="$COMFYUI_DIR/venv"
 export VENV_PYTHON="$VENV_DIR/bin/python3"
 
+# 0. uv 工具启动
+if ! command -v uv &> /dev/null; then
+    echo "--- [INIT] Installing uv package manager ---"
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
 echo "--- [ENV] Initializing Standard Environment ---"
 
-# 1. 基础目录与源码初始化
+# 1. 基础目录与源码初始化 (必须先拉取源码)
 if [ ! -d "$COMFYUI_DIR" ]; then
     echo "--- [INIT] Cloning ComfyUI Source ---"
     git clone https://github.com/comfyanonymous/ComfyUI "$COMFYUI_DIR"
 fi
 
-# 2. 虚拟环境初始化 (Python 3.13)
+# 2. 虚拟环境初始化 (通过 uv 自动管理 Python 3.13)
 if [ ! -f "$VENV_PYTHON" ]; then
-    echo "--- [INIT] Creating Python 3.13 venv ---"
-    python3.13 -m venv "$VENV_DIR"
+    echo "--- [INIT] Creating Python 3.13 venv via uv ---"
+    uv venv "$VENV_DIR" --python 3.13
     
-    echo "--- [INIT] Installing Core Dependencies (PyTorch) ---"
-    $VENV_PYTHON -m pip install --upgrade pip
-    $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    echo "--- [INIT] Installing Core Dependencies (PyTorch) via uv ---"
+    uv pip install --upgrade pip
+    uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 --python "$VENV_PYTHON"
     
     echo "--- [INIT] Installing Business Logic Dependencies ---"
-    $VENV_PYTHON -m pip install PyYAML requests
+    uv pip install PyYAML requests --python "$VENV_PYTHON"
 fi
 
-# 3. 核心依赖校验 (每次运行)
-$VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_DIR/requirements.txt"
+# 3. 核心依赖校验 (每次运行，使用 uv 加速)
+uv pip install --no-cache-dir -r "$COMFYUI_DIR/requirements.txt" --python "$VENV_PYTHON"
 
 function provisioning_start() {
     echo "--- [START] Provisioning Sequence ---"
@@ -46,7 +53,7 @@ function provisioning_install_manager() {
         git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager"
     fi
     # 强制每次运行都校验核心插件依赖 (Ensure requirements always installed)
-    $VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager/requirements.txt"
+    uv pip install --no-cache-dir -r "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager/requirements.txt" --python "$VENV_PYTHON"
 }
 
 function provisioning_sync_github() {
@@ -83,10 +90,10 @@ import yaml, os, subprocess, sys
 
 def run(cmd):
     print(f"Executing: {cmd}")
-    # 强制让内部调用也使用 100% 一致的 Python 解释器
+    # 强制让内部调用也使用 100% 一致的 Python 解释器 & 使用 uv 加速
     if cmd.startswith("pip"):
-        # 使用 sys.executable 替代 $VENV_PYTHON 环境变量
-        cmd = f"\"{sys.executable}\" -m {cmd}"
+        # 使用 uv pip install --python <sys.executable>
+        cmd = f"uv pip {cmd.replace('pip ', '')} --python \"{sys.executable}\""
     result = subprocess.run(cmd, shell=True)
     return result.returncode
 
