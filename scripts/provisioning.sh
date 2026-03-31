@@ -10,37 +10,39 @@ export VENV_PYTHON="$VENV_DIR/bin/python3"
 function provisioning_start() {
     echo "--- ComfyUI Commander Boot Sequence ---"
     
-    # 0. 基础环境初始化 (必须先拉取源码)
+    # 0. Miniconda 工具启动
+    if ! command -v conda &> /dev/null; then
+        if [ ! -d "/opt/miniconda" ]; then
+            echo "--- [INIT] Installing Miniconda ---"
+            curl -LsSf https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh
+            bash /tmp/miniconda.sh -b -p /opt/miniconda
+            rm /tmp/miniconda.sh
+        fi
+        export PATH="/opt/miniconda/bin:$PATH"
+        # 初始化 conda
+        source /opt/miniconda/etc/profile.d/conda.sh
+    fi
+
+    # 1. 基础环境初始化 (必须先拉取源码)
     if [ ! -d "$COMFYUI_DIR" ]; then
         echo "--- [INIT] Cloning ComfyUI Source ---"
         git clone https://github.com/comfyanonymous/ComfyUI "$COMFYUI_DIR"
     fi
 
-    # 1. Python 3.11 环境准备 (常规 APT 安装)
-    if ! command -v python3.11 &> /dev/null; then
-        echo "--- [INIT] Installing Python 3.11 via APT ---"
-        export DEBIAN_FRONTEND=noninteractive
-        apt-get update && apt-get install -y software-properties-common
-        add-apt-repository -y ppa:deadsnakes/ppa
-        apt-get update
-        apt-get install -y python3.11 python3.11-venv python3.11-distutils
-    fi
-
-    # 2. 虚拟环境初始化 (使用标准 venv)
+    # 2. Conda 虚拟环境初始化 (使用 python=3.11.9)
     if [ -f "$VENV_PYTHON" ]; then
-        # 兼容性检查：确保版本至少是 3.11
-        CURRENT_VER=$($VENV_PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:2])))" 2>/dev/null)
-        if [ "$CURRENT_VER" != "3.11" ]; then
-            echo "--- [WARN] Python version mismatch ($CURRENT_VER != 3.11). Recreating venv... ---"
+        CURRENT_VER=$($VENV_PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:3])))" 2>/dev/null)
+        if [ "$CURRENT_VER" != "3.11.9" ]; then
+            echo "--- [WARN] Python version mismatch ($CURRENT_VER != 3.11.9). Recreating conda env... ---"
             rm -rf "$VENV_DIR"
         fi
     fi
 
-    if [ ! -f "$VENV_PYTHON" ]; then
-        echo "--- [INIT] Creating Python 3.11 venv ---"
-        python3.11 -m venv "$VENV_DIR"
+    if [ ! -d "$VENV_DIR" ]; then
+        echo "--- [INIT] Creating Python 3.11.9 Conda Env at $VENV_DIR ---"
+        conda create -y -p "$VENV_DIR" python=3.11.9
         
-        echo "--- [INIT] Installing Core Dependencies (PyTorch) ---"
+        echo "--- [INIT] Installing Core Dependencies (PyTorch) via Conda-Pip ---"
         $VENV_PYTHON -m pip install --upgrade pip
         $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
         
