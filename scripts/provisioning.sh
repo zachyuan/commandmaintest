@@ -1,6 +1,6 @@
 #!/bin/bash
 # --- Provisioning Script (Standardized Version v1.3) ---
-# Optimized for: Standard Ubuntu / Colab / RunPod with Python 3.13
+# Optimized for: Standard Ubuntu / Colab / RunPod with Python 3.11.9
 
 # 环境变量：使用 ComfyUI 目录下的本地虚拟环境
 export COMFYUI_DIR="/opt/ComfyUI"
@@ -23,10 +23,10 @@ function provisioning_start() {
         git clone https://github.com/comfyanonymous/ComfyUI "$COMFYUI_DIR"
     fi
 
-    # 2. 虚拟环境初始化 (通过 uv 自动管理 Python 3.13)
+    # 2. 虚拟环境初始化 (通过 uv 自动管理 Python 3.11.9)
     if [ ! -f "$VENV_PYTHON" ]; then
-        echo "--- [INIT] Creating Python 3.13 venv via uv ---"
-        uv venv "$VENV_DIR" --python 3.13
+        echo "--- [INIT] Creating Python 3.11.9 venv via uv ---"
+        uv venv "$VENV_DIR" --python 3.11.9
         
         echo "--- [INIT] Installing Core Dependencies (PyTorch) via uv ---"
         uv pip install --upgrade pip
