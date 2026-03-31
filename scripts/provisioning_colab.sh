@@ -9,17 +9,15 @@ export VENV_DIR="$COMFYUI_DIR/venv"
 export VENV_PYTHON="$VENV_DIR/bin/python3"
 
 # 0. Miniconda 工具启动
-if ! command -v conda &> /dev/null; then
-    if [ ! -d "/opt/miniconda" ]; then
-        echo "--- [INIT] Installing Miniconda ---"
-        curl -LsSf https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh
-        bash /tmp/miniconda.sh -b -p /opt/miniconda
-        rm /tmp/miniconda.sh
-    fi
-    export PATH="/opt/miniconda/bin:$PATH"
-    # 初始化 conda
-    source /opt/miniconda/etc/profile.d/conda.sh
+if [ ! -d "/opt/miniconda" ]; then
+    echo "--- [INIT] Installing Miniconda ---"
+    curl -LsSf https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh
+    bash /tmp/miniconda.sh -b -p /opt/miniconda
+    rm /tmp/miniconda.sh
 fi
+# 始终确保 conda 在 PATH 中可用 (regardless of when it was installed)
+export PATH="/opt/miniconda/bin:$PATH"
+source /opt/miniconda/etc/profile.d/conda.sh
 
 echo "--- [ENV] Initializing Standard Environment ---"
 
