@@ -2,24 +2,24 @@
 # --- AI-Dock & Colab Adaptive Provisioning Script (v1.2) ---
 
 # 1. 核心环境检测与自适应
-if [ -f "/opt/ai-dock/bin/venv-set.sh" ]; then
-    echo "--- [ENV] AI-Dock Environment Detected ---"
-    source /opt/ai-dock/bin/venv-set.sh comfyui
-    VENV_PYTHON="/opt/environments/python/comfyui/bin/python3"
-else
-    echo "--- [ENV] Standard/Colab Environment Detected ---"
-    VENV_PYTHON="python3"
-    # 如果在 Colab 等环境，需要手动补齐目录和基础库
-    if [ ! -d "/opt/ComfyUI" ]; then
-        echo "--- [INIT] Cloning ComfyUI Source ---"
-        git clone https://github.com/comfyanonymous/ComfyUI /opt/ComfyUI
-        $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-    fi
-    # 强制每次运行都校验核心依赖 (Always verify core requirements)
-    $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/requirements.txt
-    # 确保 Python 业务逻辑运行所需的库
-    $VENV_PYTHON -m pip install PyYAML requests
+# if [ -f "/opt/ai-dock/bin/venv-set.sh" ]; then
+#     echo "--- [ENV] AI-Dock Environment Detected ---"
+#     source /opt/ai-dock/bin/venv-set.sh comfyui
+#     VENV_PYTHON="/opt/environments/python/comfyui/bin/python3"
+# else
+echo "--- [ENV] Standard/Colab Environment Detected ---"
+export VENV_PYTHON="python3"
+# 如果在 Colab 等环境，需要手动补齐目录和基础库
+if [ ! -d "/opt/ComfyUI" ]; then
+    echo "--- [INIT] Cloning ComfyUI Source ---"
+    git clone https://github.com/comfyanonymous/ComfyUI /opt/ComfyUI
+    $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 fi
+# 强制每次运行都校验核心依赖 (Always verify core requirements)
+$VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/requirements.txt
+# 确保 Python 业务逻辑运行所需的库
+$VENV_PYTHON -m pip install PyYAML requests
+# fi
 
 function provisioning_start() {
     echo "--- [START] Provisioning Sequence ---"
@@ -72,10 +72,10 @@ import yaml, os, subprocess, sys
 
 def run(cmd):
     print(f"Executing: {cmd}")
-    # 强制让内部调用也使用 100% 一致的 Python 解释器
+    # 强制让内部调用也使用指定的 VENV_PYTHON 解释器
     if cmd.startswith("pip"):
-        # 使用 sys.executable 替代 $VENV_PYTHON 环境变量
-        cmd = f"\"{sys.executable}\" -m {cmd}"
+        venv_python = os.environ.get('VENV_PYTHON')
+        cmd = f"\"{venv_python}\" -m {cmd}"
     result = subprocess.run(cmd, shell=True)
     return result.returncode
 
