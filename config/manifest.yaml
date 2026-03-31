@@ -77,9 +77,9 @@ scenes:
       - https://github.com/yolain/ComfyUI-Easy-Use
       - https://github.com/kijai/ComfyUI-KJNodes
     models:
-      - url: "https://huggingface.co/yiwangsimple/BiRefNet-general-epoch_244/resolve/main/BiRefNet-general.pth"
-        path: "models/BiRefNet" 
-        name: "BiRefNet-general.pth"
+      - url: "https://huggingface.co/yiwangsimple/BiRefNet-general-epoch_244/resolve/main/BiRefNet-general-epoch_244.pth"
+        path: "models/BiRefNet/pth" 
+        name: "BiRefNet-general-epoch_244.pth"
 # Global settings
 global:
 
