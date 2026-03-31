@@ -28,10 +28,15 @@ if [ ! -d "$COMFYUI_DIR" ]; then
 fi
 
 # 2. Conda 虚拟环境初始化 (使用 python=3.11.9)
-if [ -f "$VENV_PYTHON" ]; then
-    CURRENT_VER=$($VENV_PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:3])))" 2>/dev/null)
-    if [ "$CURRENT_VER" != "3.11.9" ]; then
-        echo "--- [WARN] Python version mismatch ($CURRENT_VER != 3.11.9). Recreating conda env... ---"
+if [ -d "$VENV_DIR" ]; then
+    if [ -f "$VENV_PYTHON" ]; then
+        CURRENT_VER=$($VENV_PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:3])))" 2>/dev/null)
+        if [ "$CURRENT_VER" != "3.11.9" ]; then
+            echo "--- [WARN] Python version mismatch ($CURRENT_VER != 3.11.9). Recreating conda env... ---"
+            rm -rf "$VENV_DIR"
+        fi
+    else
+        echo "--- [WARN] Python binary missing in existing venv. Recreating conda env... ---"
         rm -rf "$VENV_DIR"
     fi
 fi
