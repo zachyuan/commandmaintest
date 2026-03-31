@@ -40,7 +40,7 @@ fi
 
 if [ ! -d "$VENV_DIR" ]; then
     echo "--- [INIT] Creating Python 3.11.9 Conda Env at $VENV_DIR ---"
-    conda create -y -p "$VENV_DIR" python=3.11.9
+    conda create -y -p "$VENV_DIR" python=3.11.9 pip
     
     echo "--- [INIT] Installing Core Dependencies (PyTorch) via Conda-Pip ---"
     $VENV_PYTHON -m pip install --upgrade pip
