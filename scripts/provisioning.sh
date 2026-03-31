@@ -10,42 +10,46 @@ export VENV_PYTHON="$VENV_DIR/bin/python3"
 function provisioning_start() {
     echo "--- ComfyUI Commander Boot Sequence ---"
     
-    # 0. uv 工具启动
-    if ! command -v uv &> /dev/null; then
-        echo "--- [INIT] Installing uv package manager ---"
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        export PATH="$HOME/.local/bin:$PATH"
-    fi
-
-    # 1. 基础环境检查与初始化 (必须先拉取源码)
+    # 0. 基础环境初始化 (必须先拉取源码)
     if [ ! -d "$COMFYUI_DIR" ]; then
         echo "--- [INIT] Cloning ComfyUI Source ---"
         git clone https://github.com/comfyanonymous/ComfyUI "$COMFYUI_DIR"
     fi
 
-    # 2. 虚拟环境初始化 (通过 uv 自动管理 Python 3.11.9)
+    # 1. Python 3.11 环境准备 (常规 APT 安装)
+    if ! command -v python3.11 &> /dev/null; then
+        echo "--- [INIT] Installing Python 3.11 via APT ---"
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update && apt-get install -y software-properties-common
+        add-apt-repository -y ppa:deadsnakes/ppa
+        apt-get update
+        apt-get install -y python3.11 python3.11-venv python3.11-distutils
+    fi
+
+    # 2. 虚拟环境初始化 (使用标准 venv)
     if [ -f "$VENV_PYTHON" ]; then
-        CURRENT_VER=$($VENV_PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:3])))" 2>/dev/null)
-        if [ "$CURRENT_VER" != "3.11.9" ]; then
-            echo "--- [WARN] Python version mismatch ($CURRENT_VER != 3.11.9). Recreating venv... ---"
+        # 兼容性检查：确保版本至少是 3.11
+        CURRENT_VER=$($VENV_PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:2])))" 2>/dev/null)
+        if [ "$CURRENT_VER" != "3.11" ]; then
+            echo "--- [WARN] Python version mismatch ($CURRENT_VER != 3.11). Recreating venv... ---"
             rm -rf "$VENV_DIR"
         fi
     fi
 
     if [ ! -f "$VENV_PYTHON" ]; then
-        echo "--- [INIT] Creating Python 3.11.9 venv via uv ---"
-        uv venv "$VENV_DIR" --python 3.11.9
+        echo "--- [INIT] Creating Python 3.11 venv ---"
+        python3.11 -m venv "$VENV_DIR"
         
-        echo "--- [INIT] Installing Core Dependencies (PyTorch) via uv ---"
-        uv pip install --upgrade pip
-        uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 --python "$VENV_PYTHON"
+        echo "--- [INIT] Installing Core Dependencies (PyTorch) ---"
+        $VENV_PYTHON -m pip install --upgrade pip
+        $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
         
         echo "--- [INIT] Installing Business Logic Dependencies ---"
-        uv pip install PyYAML requests --python "$VENV_PYTHON"
+        $VENV_PYTHON -m pip install PyYAML requests
     fi
     
-    # 0.1 强制校验 ComfyUI 核心依赖 (每次运行，使用 uv 加速)
-    uv pip install --no-cache-dir -r "$COMFYUI_DIR/requirements.txt" --python "$VENV_PYTHON"
+    # 0.1 强制校验 ComfyUI 核心依赖
+    $VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_DIR/requirements.txt"
     
     # 1. 核心依赖检查：若无 aria2c 则自动安装 (解决 /bin/sh: 1: aria2c: not found)
     if ! command -v aria2c &> /dev/null; then
@@ -68,7 +72,7 @@ function provisioning_install_manager() {
         git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager"
     fi
     # 强制每次运行都校验核心插件依赖 (Ensure requirements always installed)
-    uv pip install --no-cache-dir -r "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager/requirements.txt" --python "$VENV_PYTHON"
+    $VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager/requirements.txt"
 }
 
 function provisioning_sync_github() {
@@ -106,8 +110,8 @@ import yaml, os, subprocess, sys
 def run(cmd):
     print(f"Executing: {cmd}")
     if cmd.startswith("pip"):
-        # 使用 uv 加速安装
-        cmd = f"uv pip {cmd.replace('pip ', '')} --python \"{sys.executable}\""
+        # 使用当前运行脚本的 Python 解释器 (sys.executable)
+        cmd = f"\"{sys.executable}\" -m {cmd}"
     result = subprocess.run(cmd, shell=True)
     return result.returncode
 
