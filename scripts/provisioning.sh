@@ -109,9 +109,10 @@ import yaml, os, subprocess, sys
 
 def run(cmd):
     print(f"Executing: {cmd}")
+    # 强制内部调用也使用指定的 VENV_PYTHON 解释器
     if cmd.startswith("pip"):
-        # 使用当前运行脚本的 Python 解释器 (sys.executable)
-        cmd = f"\"{sys.executable}\" -m {cmd}"
+        venv_python = os.environ.get('VENV_PYTHON')
+        cmd = f"\"{venv_python}\" -m {cmd}"
     result = subprocess.run(cmd, shell=True)
     return result.returncode
 
