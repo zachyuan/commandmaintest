@@ -1,25 +1,36 @@
 #!/bin/bash
 # --- AI-Dock & Colab Adaptive Provisioning Script (v1.2) ---
 
-# 1. 核心环境检测与自适应
-if [ -f "/opt/ai-dock/bin/venv-set.sh" ]; then
-    echo "--- [ENV] AI-Dock Environment Detected ---"
-    source /opt/ai-dock/bin/venv-set.sh comfyui
-    VENV_PYTHON="/opt/environments/python/comfyui/bin/python3"
-else
-    echo "--- [ENV] Standard/Colab Environment Detected ---"
-    VENV_PYTHON="python3"
-    # 如果在 Colab 等环境，需要手动补齐目录和基础库
-    if [ ! -d "/opt/ComfyUI" ]; then
-        echo "--- [INIT] Cloning ComfyUI Source ---"
-        git clone https://github.com/comfyanonymous/ComfyUI /opt/ComfyUI
-        $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-    fi
-    # 强制每次运行都校验核心依赖 (Always verify core requirements)
-    $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/requirements.txt
-    # 确保 Python 业务逻辑运行所需的库
+# --- Standardized Provisioning Script (v1.3) ---
+
+# 环境变量：使用 ComfyUI 目录下的本地虚拟环境
+export COMFYUI_DIR="/opt/ComfyUI"
+export VENV_DIR="$COMFYUI_DIR/venv"
+export VENV_PYTHON="$VENV_DIR/bin/python3"
+
+echo "--- [ENV] Initializing Standard Environment ---"
+
+# 1. 基础目录与源码初始化
+if [ ! -d "$COMFYUI_DIR" ]; then
+    echo "--- [INIT] Cloning ComfyUI Source ---"
+    git clone https://github.com/comfyanonymous/ComfyUI "$COMFYUI_DIR"
+fi
+
+# 2. 虚拟环境初始化 (Python 3.13)
+if [ ! -f "$VENV_PYTHON" ]; then
+    echo "--- [INIT] Creating Python 3.13 venv ---"
+    python3.13 -m venv "$VENV_DIR"
+    
+    echo "--- [INIT] Installing Core Dependencies (PyTorch) ---"
+    $VENV_PYTHON -m pip install --upgrade pip
+    $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    
+    echo "--- [INIT] Installing Business Logic Dependencies ---"
     $VENV_PYTHON -m pip install PyYAML requests
 fi
+
+# 3. 核心依赖校验 (每次运行)
+$VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_DIR/requirements.txt"
 
 function provisioning_start() {
     echo "--- [START] Provisioning Sequence ---"
@@ -30,12 +41,12 @@ function provisioning_start() {
 }
 
 function provisioning_install_manager() {
-    if [ ! -d "/opt/ComfyUI/custom_nodes/ComfyUI-Manager" ]; then
+    if [ ! -d "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager" ]; then
         echo "--- [INIT] Installing ComfyUI-Manager ---"
-        git clone https://github.com/ltdrdata/ComfyUI-Manager /opt/ComfyUI/custom_nodes/ComfyUI-Manager
+        git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager"
     fi
     # 强制每次运行都校验核心插件依赖 (Ensure requirements always installed)
-    $VENV_PYTHON -m pip install --no-cache-dir -r /opt/ComfyUI/custom_nodes/ComfyUI-Manager/requirements.txt
+    $VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_DIR/custom_nodes/ComfyUI-Manager/requirements.txt"
 }
 
 function provisioning_sync_github() {
@@ -43,7 +54,7 @@ function provisioning_sync_github() {
     
     # 同步 Manifest 配置文件
     if [ ! -z "$MANIFEST_URL" ]; then
-        curl -sL "$MANIFEST_URL" > /opt/manifest.yaml
+        curl -sL "$MANIFEST_URL" > "$COMFYUI_DIR/manifest.yaml"
     fi
 
     # 健壮同步私有工作流仓库 (支持 GH_TOKEN)
@@ -79,7 +90,7 @@ def run(cmd):
     result = subprocess.run(cmd, shell=True)
     return result.returncode
 
-manifest_path = "/opt/manifest.yaml"
+manifest_path = os.path.join(os.environ['COMFYUI_DIR'], "manifest.yaml")
 if not os.path.exists(manifest_path):
     print("Manifest not found, skipping asset loading.")
     exit(0)
@@ -110,7 +121,7 @@ for node in all_nodes:
             
         if url and url.startswith("http"):
             name = url.split("/")[-1].replace(".git", "")
-            path = f"/opt/ComfyUI/custom_nodes/{name}"
+            path = os.path.join(os.environ['COMFYUI_DIR'], "custom_nodes", name)
             if not os.path.exists(path):
                 run(f"git clone -b {version} {url} {path}")
             
@@ -127,7 +138,7 @@ header = f'--header="Authorization: Bearer {hf_token}"' if hf_token else ''
 for model in all_models:
     try:
         url, name = model.get('url'), model.get('name')
-        dest_dir = f"/opt/ComfyUI/{model['path']}"
+        dest_dir = os.path.join(os.environ['COMFYUI_DIR'], model['path'])
         os.makedirs(dest_dir, exist_ok=True)
         if not os.path.exists(f"{dest_dir}/{name}"):
             cmd = f'aria2c -x16 -s16 -k1M -o "{name}" -d "{dest_dir}" {header} "{url}"'
@@ -138,7 +149,7 @@ for model in all_models:
 # 4. 同步工作流 (Workflow Sync)
 workflow_repo_path = "/opt/workflows"
 if os.path.exists(workflow_repo_path):
-    dest = "/opt/ComfyUI/user/default/workflows"
+    dest = os.path.join(os.environ['COMFYUI_DIR'], "user/default/workflows")
     os.makedirs(dest, exist_ok=True)
     src = f"{workflow_repo_path}/workflows" if os.path.exists(f"{workflow_repo_path}/workflows") else workflow_repo_path
     print(f"--- [SYNC] Syncing workflows from {src} to {dest} ---")
@@ -146,10 +157,11 @@ if os.path.exists(workflow_repo_path):
 
 # 5. 最终路径审计 (Final Path Audit)
 print("\n--- [AUDIT] Custom Nodes Contents ---")
-if os.path.exists("/opt/ComfyUI/custom_nodes"):
-    print(os.listdir("/opt/ComfyUI/custom_nodes"))
+custom_nodes_path = os.path.join(os.environ['COMFYUI_DIR'], "custom_nodes")
+if os.path.exists(custom_nodes_path):
+    print(os.listdir(custom_nodes_path))
 else:
-    print("WARNING: /opt/ComfyUI/custom_nodes NOT FOUND")
+    print(f"WARNING: {custom_nodes_path} NOT FOUND")
 EOF
 
     # 最终汇总
