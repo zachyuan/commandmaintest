@@ -24,6 +24,14 @@ function provisioning_start() {
     fi
 
     # 2. 虚拟环境初始化 (通过 uv 自动管理 Python 3.11.9)
+    if [ -f "$VENV_PYTHON" ]; then
+        CURRENT_VER=$($VENV_PYTHON -c "import sys; print('.'.join(map(str, sys.version_info[:3])))" 2>/dev/null)
+        if [ "$CURRENT_VER" != "3.11.9" ]; then
+            echo "--- [WARN] Python version mismatch ($CURRENT_VER != 3.11.9). Recreating venv... ---"
+            rm -rf "$VENV_DIR"
+        fi
+    fi
+
     if [ ! -f "$VENV_PYTHON" ]; then
         echo "--- [INIT] Creating Python 3.11.9 venv via uv ---"
         uv venv "$VENV_DIR" --python 3.11.9
