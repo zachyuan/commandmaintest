@@ -21,6 +21,8 @@ scenes:
       - url: "https://huggingface.co/comfyanonymous/wd-1.5-beta2_unCLIP/resolve/main/wd-1-5-beta2-unclip-h-fp16.safetensors"
         path: "models/clip"
         name: "wd-1-5-beta2-unclip-h-fp16.safetensors"
+    
+    pips: []
 
   portrait_photography:
     nodes:
@@ -30,6 +32,8 @@ scenes:
       - url: "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors"
         path: "models/checkpoints"
         name: "sd_xl_base_1.0.safetensors"
+    
+    pips: []
 
   versatile-sd:
     nodes:
@@ -40,30 +44,32 @@ scenes:
       - "https://github.com/cubiq/ComfyUI_IPAdapter_plus.git" # comfyui_ipadapter_plus
       - "https://github.com/huchenlei/ComfyUI-IC-Light.git" # huchenlei/ComfyUI-IC-Light
     models:
-    - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"
-      path: "models/clip_vision"
-      name: "CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors"
-    - url: "https://huggingface.co/Lykon/dreamshaper-xl-lightning/resolve/main/DreamShaperXL_Lightning.safetensors?download=true"
-      path: "models/checkpoints"
-      name: "DreamShaperXL_Lightning.safetensors"
-    - url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors?download=true"
-      path: "models/checkpoints"
-      name: "DreamShaper_8_pruned.safetensors"
-    - url: "https://civitai.com/api/download/models/135867?type=Model&format=SafeTensor"
-      path: "models/loras"
-      name: "add-detail-xl.safetensors"
-    - url: "https://civitai.com/api/download/models/450187"
-      path: "models/checkpoints"
-      name: "dreamshaperXL_lightningInpaint.safetensors"
-    - url: "https://huggingface.co/huchenlei/IC-Light-ldm/resolve/main/iclight_sd15_fbc_unet_ldm.safetensors?download=true"
-      path: "models/unet"
-      name: "iclight_sd15_fbc_unet_ldm.safetensors"
-    - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"
-      path: "models/ipadapter"
-      name: "ip-adapter_sdxl.safetensors"
-    - url: "https://huggingface.co/TheMistoAI/MistoLine/resolve/main/mistoLine_rank256.safetensors?download=true"
-      path: "models/controlnet"
-      name: "mistoLine_rank256.safetensors"
+      - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors"
+        path: "models/clip_vision"
+        name: "CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors"
+      - url: "https://huggingface.co/Lykon/dreamshaper-xl-lightning/resolve/main/DreamShaperXL_Lightning.safetensors?download=true"
+        path: "models/checkpoints"
+        name: "DreamShaperXL_Lightning.safetensors"
+      - url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors?download=true"
+        path: "models/checkpoints"
+        name: "DreamShaper_8_pruned.safetensors"
+      - url: "https://civitai.com/api/download/models/135867?type=Model&format=SafeTensor"
+        path: "models/loras"
+        name: "add-detail-xl.safetensors"
+      - url: "https://civitai.com/api/download/models/450187"
+        path: "models/checkpoints"
+        name: "dreamshaperXL_lightningInpaint.safetensors"
+      - url: "https://huggingface.co/huchenlei/IC-Light-ldm/resolve/main/iclight_sd15_fbc_unet_ldm.safetensors?download=true"
+        path: "models/unet"
+        name: "iclight_sd15_fbc_unet_ldm.safetensors"
+      - url: "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors"
+        path: "models/ipadapter"
+        name: "ip-adapter_sdxl.safetensors"
+      - url: "https://huggingface.co/TheMistoAI/MistoLine/resolve/main/mistoLine_rank256.safetensors?download=true"
+        path: "models/controlnet"
+        name: "mistoLine_rank256.safetensors"
+    
+    pips: []
 
   BiRefNet:
     nodes:
@@ -83,6 +89,7 @@ scenes:
       - url: "https://huggingface.co/yuvraj108c/RMBG-2.0/resolve/main/pytorch_model.bin"
         path: "models/RMBG" 
         name: "RMBG_2.0.bin"
+    pips: []
   
   Layered_cutout:
     nodes:
@@ -93,6 +100,7 @@ scenes:
       - "https://github.com/M1kep/ComfyLiterals"
       - "https://github.com/YaserJaradeh/comfyui-yaser-nodes"
       - "https://github.com/olduvai-jp/ComfyUI-S3-IO"
+      # pip install soundfile
     models:
       - url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
         path: models/text_encoders/qwen
@@ -100,6 +108,31 @@ scenes:
       - url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
         path: models/vae
         name: qwen_image_layered_vae.safetensors
+      - url: https://huggingface.co/Comfy-Org/Qwen-Image-Layered_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_layered_fp8mixed.safetensors
+        path: models/diffusion_models
+        name: qwen_image_layered_fp8mixed.safetensors
+      - url: https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors
+        path: models/loras
+        name: Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors
+    pips: ["soundfile", "OpenEXR"]
+
+  Poster_layout:
+    nodes:
+      - "https://github.com/rgthree/rgthree-comfy"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/bollerdominik/ComfyUI-load-lora-from-url"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/jamesWalker55/comfyui-various"
+    models:
+      - name: qwen_2.5_vl_7b_fp8_scaled.safetensors
+        path: models/text_encoders/qwen
+        url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors      
+      - name: qwen_image_layered_vae.safetensors
+        path: models/vae
+        url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+    pips: ["soundfile", "OpenEXR"]
         
       
 

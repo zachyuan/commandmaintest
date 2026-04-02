@@ -102,11 +102,14 @@ scene = manifest.get('scenes', {}).get(scene_name, {})
 # 1. 资源合并 (Asset Merging)
 global_nodes = manifest.get('global', {}).get('nodes', [])
 global_models = manifest.get('global', {}).get('models', [])
+global_pips = manifest.get('global', {}).get('pips', [])
 scene_nodes = scene.get('nodes', []) if scene else []
 scene_models = scene.get('models', []) if scene else []
+scene_pips = scene.get('pips', []) if scene else []
 
 all_nodes = (global_nodes or []) + (scene_nodes or [])
 all_models = (global_models or []) + (scene_models or [])
+all_pips = (global_pips or []) + (scene_pips or [])
 
 # 2. 自动安装插件节点 (Node Setup)
 for node in all_nodes:
@@ -144,7 +147,14 @@ for model in all_models:
     except Exception as e:
         print(f"❌ Error processing model {model.get('name', 'unknown')}: {e}")
 
-# 4. 同步工作流 (Workflow Sync)
+# 4. 自动安装 Python 包 (Pip Setup)
+for package in all_pips:
+    try:
+        run(f"pip install {package}")
+    except Exception as e:
+        print(f"❌ Error installing pip package {package}: {e}")
+
+# 5. 同步工作流 (Workflow Sync)
 workflow_repo_path = "/opt/workflows"
 if os.path.exists(workflow_repo_path):
     dest = f"{comfyui_path}/user/default/workflows"
@@ -153,7 +163,7 @@ if os.path.exists(workflow_repo_path):
     print(f"--- [SYNC] Syncing workflows from {src} to {dest} ---")
     run(f"cp -v {src}/*.json {dest}/ 2>/dev/null || true")
 
-# 5. 最终路径审计 (Final Path Audit)
+# 6. 最终路径审计 (Final Path Audit)
 print("\n--- [AUDIT] Custom Nodes Contents ---")
 if os.path.exists(f"{comfyui_path}/custom_nodes"):
     print(os.listdir(f"{comfyui_path}/custom_nodes"))
