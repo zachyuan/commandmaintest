@@ -86,7 +86,13 @@ scenes:
   
   Layered_cutout:
     nodes:
-      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
+      - "https://github.com/jamesWalker55/comfyui-various"
+      - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/YaserJaradeh/comfyui-yaser-nodes"
+      - "https://github.com/olduvai-jp/ComfyUI-S3-IO"
     models:
       - url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
         path: models/text_encoders/qwen
