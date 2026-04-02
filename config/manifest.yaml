@@ -80,6 +80,26 @@ scenes:
       - url: "https://huggingface.co/yiwangsimple/BiRefNet-general-epoch_244/resolve/main/BiRefNet-general-epoch_244.pth"
         path: "models/BiRefNet/pth" 
         name: "BiRefNet-general-epoch_244.pth"
+      - url: "https://huggingface.co/yuvraj108c/RMBG-2.0/resolve/main/pytorch_model.bin"
+        path: "models/RMBG" 
+        name: "RMBG_2.0.bin"
+  
+  Layered_cutout:
+    nodes:
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
+    models:
+      - url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
+        path: models/text_encoders/qwen
+        name: qwen_2.5_vl_7b_fp8_scaled.safetensors
+      - url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+        path: models/vae
+        name: qwen_image_layered_vae.safetensors
+        
+      
+
+
+  
+
 # Global settings
 global:
 
