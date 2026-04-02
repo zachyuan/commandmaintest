@@ -8,7 +8,7 @@ PLATFORM=${PLATFORM:-"colab"}
 if [ "$PLATFORM" = "runpod" ]; then
     COMFYUI_PATH="/workspace/runpod-slim/ComfyUI"
 elif [ "$PLATFORM" = "vast" ]; then
-    COMFYUI_PATH="/ComfyUI"
+    COMFYUI_PATH="/workspace/ComfyUI"
 elif [ "$PLATFORM" = "colab" ]; then
     COMFYUI_PATH="/opt/ComfyUI"
 else
