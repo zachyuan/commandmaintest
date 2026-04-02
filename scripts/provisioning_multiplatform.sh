@@ -6,13 +6,13 @@ export VENV_PYTHON="python3"
 # 平台自适应路径配置
 PLATFORM=${PLATFORM:-"colab"}
 if [ "$PLATFORM" = "runpod" ]; then
-    COMFYUI_PATH="/workspace/ComfyUI"
+    COMFYUI_PATH="/workspace/runpod-slim/ComfyUI"
 elif [ "$PLATFORM" = "vast" ]; then
     COMFYUI_PATH="/ComfyUI"
 elif [ "$PLATFORM" = "colab" ]; then
     COMFYUI_PATH="/opt/ComfyUI"
 else
-    COMFYUI_PATH="/workspace/ComfyUI"
+    COMFYUI_PATH="/opt/ComfyUI"
 fi
 export COMFYUI_PATH
 
