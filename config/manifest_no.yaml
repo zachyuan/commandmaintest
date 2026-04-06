@@ -70,15 +70,6 @@ scenes:
         name: "mistoLine_rank256.safetensors"
     
     pips: []
-  
-  versatile-pony:
-    nodes:
-      - "https://github.com/yolain/ComfyUI-Easy-Use"
-      - "https://github.com/ronniebasak/ComfyUI-Tara-LLM-Integration"
-      - "https://github.com/Fannovel16/comfyui_controlnet_aux"
-      - "https://github.com/cubiq/ComfyUI_essentials"
-    # models:
-    # pips: []
 
   BiRefNet:
     nodes:
@@ -100,6 +91,55 @@ scenes:
         name: "RMBG_2.0.bin"
     pips: []
   
+  #bilg
+  Layered_cutout:
+    nodes:
+      - "https://github.com/jamesWalker55/comfyui-various"
+      - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/YaserJaradeh/comfyui-yaser-nodes"
+      - "https://github.com/olduvai-jp/ComfyUI-S3-IO"
+      # pip install soundfile
+    models:
+      - url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
+        path: models/text_encoders/qwen
+        name: qwen_2.5_vl_7b_fp8_scaled.safetensors
+      - url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+        path: models/vae
+        name: qwen_image_layered_vae.safetensors
+      - url: https://huggingface.co/Comfy-Org/Qwen-Image-Layered_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_layered_fp8mixed.safetensors
+        path: models/diffusion_models
+        name: qwen_image_layered_fp8mixed.safetensors
+      - url: https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors
+        path: models/loras
+        name: Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors
+    pips: ["soundfile", "OpenEXR"]
+
+  #no
+  Poster_layout:
+    nodes:
+      - "https://github.com/rgthree/rgthree-comfy"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/bollerdominik/ComfyUI-load-lora-from-url"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/jamesWalker55/comfyui-various"
+    models:
+      - name: qwen_2.5_vl_7b_fp8_scaled.safetensors
+        path: models/text_encoders/qwen
+        url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors      
+      - name: qwen_image_layered_vae.safetensors
+        path: models/vae
+        url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+    pips: ["soundfile", "OpenEXR"]
+        
+      
+
+
+  
 
 # Global settings
 global:
@@ -118,7 +158,7 @@ global:
     # - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
 
   # Shared models for ALL scenes
-  # models:
-  #   - url: "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
-  #     path: "models/checkpoints"
-  #     name: "v1-5-pruned-emaonly.safetensors"
+  models:
+    - url: "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
+      path: "models/checkpoints"
+      name: "v1-5-pruned-emaonly.safetensors"
