@@ -71,14 +71,14 @@ scenes:
     
     pips: []
   
-  versatile-pony:
-    nodes:
-      - "https://github.com/yolain/ComfyUI-Easy-Use"
-      - "https://github.com/ronniebasak/ComfyUI-Tara-LLM-Integration"
-      - "https://github.com/Fannovel16/comfyui_controlnet_aux"
-      - "https://github.com/cubiq/ComfyUI_essentials"
-    # models:
-    # pips: []
+  # versatile-pony:
+  #   nodes:
+  #     - "https://github.com/yolain/ComfyUI-Easy-Use"
+  #     - "https://github.com/ronniebasak/ComfyUI-Tara-LLM-Integration"
+  #     - "https://github.com/Fannovel16/comfyui_controlnet_aux"
+  #     - "https://github.com/cubiq/ComfyUI_essentials"
+  #   # models:
+  #   # pips: []
 
   BiRefNet:
     nodes:
@@ -98,8 +98,148 @@ scenes:
       - url: "https://huggingface.co/yuvraj108c/RMBG-2.0/resolve/main/pytorch_model.bin"
         path: "models/RMBG" 
         name: "RMBG_2.0.bin"
+      # - url: "https://huggingface.co/briaai/RMBG-1.4/resolve/main/model.pth"
+      #   path: "models/RMBG" 
+      #   name: "RMBG_1.4.pth"
     pips: []
   
+  minimax_remover:
+    nodes:
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle_Advance"
+      - "https://github.com/LeonQ8/ComfyUI-Dynamic-Lora-Scheduler"
+      - "https://github.com/kijai/ComfyUI-KJNodes"
+      - "https://github.com/bollerdominik/ComfyUI-load-lora-from-url"
+      - "https://github.com/TheLustriVA/ComfyUI-Image-Size-Tools"
+      - "https://github.com/chrisgoringe/cg-use-everywhere"
+      - "https://github.com/cubiq/ComfyUI_essentials"
+      - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes"
+      - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/Nourepide/ComfyUI-Allor"
+      - "https://github.com/TTPlanetPig/Comfyui_Object_Detect_QWen_VL"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/kijai/ComfyUI-WanVideoWrapper"
+    models:
+      - url: https://huggingface.co/ALGOTECH/WanVideo_comfy/resolve/main/umt5-xxl-enc-bf16.safetensors
+        path: models/text_encoders
+        name: umt5-xxl-enc-bf16.safetensors
+      - url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+        path: models/vae
+        name: wan_2.1_vae.safetensors
+    pips: []
+  
+  #bilg
+  Layered_cutout:
+    nodes:
+      - "https://github.com/jamesWalker55/comfyui-various"
+      - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/YaserJaradeh/comfyui-yaser-nodes"
+      - "https://github.com/olduvai-jp/ComfyUI-S3-IO"
+      # pip install soundfile
+    models:
+      - url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
+        path: models/text_encoders/qwen
+        name: qwen_2.5_vl_7b_fp8_scaled.safetensors
+      - url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+        path: models/vae
+        name: qwen_image_layered_vae.safetensors
+      - url: https://huggingface.co/Comfy-Org/Qwen-Image-Layered_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_layered_fp8mixed.safetensors
+        path: models/diffusion_models
+        name: qwen_image_layered_fp8mixed.safetensors
+      - url: https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors
+        path: models/loras
+        name: Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors
+    pips: ["soundfile", "OpenEXR"]
+
+  #no
+  Poster_layout:
+    nodes:
+      - "https://github.com/rgthree/rgthree-comfy"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/bollerdominik/ComfyUI-load-lora-from-url"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/TheLustriVA/ComfyUI-Image-Size-Tools"
+      - "https://github.com/chrisgoringe/cg-use-everywhere"
+      - "https://github.com/cubiq/ComfyUI_essentials"
+      - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes"
+      - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/Nourepide/ComfyUI-Allor"
+      - "https://github.com/TTPlanetPig/Comfyui_Object_Detect_QWen_VL"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/kijai/ComfyUI-WanVideoWrapper"
+    models:
+      - url: "https://huggingface.co/yiwangsimple/BiRefNet-general-epoch_244/resolve/main/BiRefNet-general-epoch_244.pth"
+        path: "models/BiRefNet/pth" 
+        name: "BiRefNet-general-epoch_244.pth"
+      - url: "https://huggingface.co/yuvraj108c/RMBG-2.0/resolve/main/pytorch_model.bin"
+        path: "models/RMBG" 
+        name: "RMBG_2.0.bin"
+      # - url: "https://huggingface.co/briaai/RMBG-1.4/resolve/main/model.pth"
+      #   path: "models/RMBG" 
+      #   name: "RMBG_1.4.pth"
+    pips: []
+
+# Global settings
+global:
+
+  # Shared nodes for ALL scenes
+  nodes:
+    - "https://github.com/Comfy-Org/ComfyUI-Manager.git" 
+    # - "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git" 
+    # - "https://github.com/Fannovel16/comfyui_controlnet_aux.git"
+    - "https://github.com/rgthree/rgthree-comfy.git" 
+    - "https://github.com/cubiq/ComfyUI_essentials.git" 
+    # - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git" 
+    - "https://github.com/crystian/ComfyUI-Crystools.git" 
+    # - "https://github.com/yolain/ComfyUI-Easy-Use.git" 
+    # - "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git" 
+    # - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git"
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/chrisgoringe/cg-use-everywhere": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/cubiq/ComfyUI_essentials": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/pythongosssss/ComfyUI-Custom-Scripts": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/Nourepide/ComfyUI-Allor": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/TTPlanetPig/Comfyui_Object_Detect_QWen_VL": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/yolain/ComfyUI-Easy-Use": {
+            "state": "not-installed",
+            "hash": "-"
+        },
+        "https://github.com/kijai/ComfyUI-WanVideoWrapper": {
+            "state": "not-installed",
+            "hash": "-"
+        }
+    }
 
 # Global settings
 global:
