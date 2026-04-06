@@ -103,6 +103,10 @@ scenes:
       #   name: "RMBG_1.4.pth"
     pips: []
   
+  # Find the VHS_VideoCombine node, Change it from video/h264-mp4.json to video/h264-mp4
+  # Locate the FluxResolutionNode, Change the value from 0.5 to one of the allowed presets
+  # Find the Qwen2.5-VL loader node.,Change the attention setting:attn_implementation → sdpa
+  # >16g
   minimax_remover:
     nodes:
       - "https://github.com/chflame163/ComfyUI_LayerStyle"
@@ -127,7 +131,36 @@ scenes:
       - url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
         path: models/vae
         name: wan_2.1_vae.safetensors
-    pips: []
+      - url: https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Wan2_1-MiniMaxRemover_1_3B_fp16.safetensors
+        path: models/diffusion_models
+        name: Wan2_1-MiniMaxRemover_1_3B_fp16.safetensors
+    pips: ["sageattention", "flash-attn"]
+
+  paint_model:
+    nodes:
+      - "https://github.com/zhangp365/ComfyUI-utils-nodes"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle_Advance"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/lrzjason/Comfyui-QwenEditUtils"
+      - "https://github.com/kijai/ComfyUI-KJNodes"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/Fannovel16/comfyui_controlnet_aux"
+      - "https://github.com/1038lab/ComfyUI-RMBG"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+    models:
+      - name: BiRefNet-general-v1.pth
+        path: models/BiRefNet
+        url: https://huggingface.co/ZhengPeng7/BiRefNet/resolve/main/BiRefNet-general-v1.pth
+      - name: qwen_2.5_vl_7b_fp8_scaled.safetensors
+        path: models/text_encoders/qwen
+        url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
+      - name: qwen_image_edit_2509_fp8_e4m3fn.safetensors
+        path: models/diffusion_models/qwen-image-edit
+        url: https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors
+      - name: qwen_image_vae.safetensors
+        path: models/vae
+        url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
 
 # Global settings
 global:
