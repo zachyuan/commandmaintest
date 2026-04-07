@@ -35,6 +35,7 @@ scenes:
     
     pips: []
 
+  # 16g yes
   versatile-sd:
     nodes:
       - url: "https://github.com/yolain/ComfyUI-Easy-Use.git"
@@ -80,6 +81,7 @@ scenes:
   #   # models:
   #   # pips: []
 
+  # 16g yes
   BiRefNet:
     nodes:
       - https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes
@@ -106,7 +108,7 @@ scenes:
   # Find the VHS_VideoCombine node, Change it from video/h264-mp4.json to video/h264-mp4
   # Locate the FluxResolutionNode, Change the value from 0.5 to one of the allowed presets
   # Find the Qwen2.5-VL loader node.,Change the attention setting:attn_implementation → sdpa
-  # >16g
+  # >16g no
   minimax_remover:
     nodes:
       - "https://github.com/chflame163/ComfyUI_LayerStyle"
@@ -136,6 +138,7 @@ scenes:
         name: Wan2_1-MiniMaxRemover_1_3B_fp16.safetensors
     pips: ["sageattention", "flash-attn"]
 
+  # >16g no
   paint_model:
     nodes:
       - "https://github.com/zhangp365/ComfyUI-utils-nodes"
@@ -149,9 +152,9 @@ scenes:
       - "https://github.com/1038lab/ComfyUI-RMBG"
       - "https://github.com/aining2022/ComfyUI_Swwan"
     models:
-      - name: BiRefNet-general-v1.pth
-        path: models/BiRefNet
-        url: https://huggingface.co/ZhengPeng7/BiRefNet/resolve/main/BiRefNet-general-v1.pth
+      - name: "BiRefNet-general-epoch_244.pth"
+        path: "models/BiRefNet/pth" 
+        url: "https://huggingface.co/yiwangsimple/BiRefNet-general-epoch_244/resolve/main/BiRefNet-general-epoch_244.pth"
       - name: qwen_2.5_vl_7b_fp8_scaled.safetensors
         path: models/text_encoders/qwen
         url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
@@ -161,6 +164,153 @@ scenes:
       - name: qwen_image_vae.safetensors
         path: models/vae
         url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+
+  #no
+  lens_selection:
+    nodes:
+      - "https://github.com/zhangp365/ComfyUI-utils-nodes"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle_Advance"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/lrzjason/Comfyui-QwenEditUtils"
+      - "https://github.com/kijai/ComfyUI-KJNodes"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/Fannovel16/comfyui_controlnet_aux"
+      - "https://github.com/1038lab/ComfyUI-RMBG"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+    models:
+      - name: qwen_2.5_vl_7b_fp8_scaled.safetensors
+        path: models/text_encoders/qwen
+        url: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors
+      - name: qwen_image_vae.safetensors
+        path: models/vae
+        url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+  
+  # no
+  image_correction:
+    nodes:
+      - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/lrzjason/Comfyui-QwenEditUtils"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/rgthree/rgthree-comfy"
+    #     models:
+    #       DEBUG: Example model found: qwen2511_融合矫正透视v3.safetensors
+    # DEBUG: Example model found: 2511-Unblur-Anything.safetensors
+    # DEBUG: Example model found: qwen2511_融合矫正透视v1.safetensors
+    # DEBUG: Example model found: new_Qwen-Rapid-AIO-SFW-v21.safetensors
+
+  #no
+  auto_match_scene:
+    nodes:
+      - "https://github.com/zhangp365/ComfyUI-utils-nodes"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle_Advance"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/lrzjason/Comfyui-QwenEditUtils"
+      - "https://github.com/kijai/ComfyUI-KJNodes"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/Fannovel16/comfyui_controlnet_aux"
+      - "https://github.com/1038lab/ComfyUI-RMBG"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/rgthree/rgthree-comfy"
+    models:
+      - name: flux2-vae.safetensors
+        path: models/vae
+        url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+
+  # no
+  scene_graph_synthesis:
+    nodes:
+      - "https://github.com/Auttasak-L/ComfyUI-ImageCropper"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes"
+      - "https://github.com/LAOGOU-666/Comfyui_LG_Tools"
+    
+  change_background_refer:
+    nodes:
+      - "https://github.com/shadowcz007/comfyui-mixlab-nodes"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/crystian/ComfyUI-Crystools"
+      - "https://github.com/ltdrdata/ComfyUI-Impact-Pack"
+      - "https://github.com/rgthree/rgthree-comfy"
+      - "https://github.com/TTPlanetPig/Comfyui_Object_Migration"
+      - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes"
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+    models:
+      - name: ae.safetensors
+        path: models/vae
+        url: https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors
+      - name: clip_l.safetensors
+        path: models/clip
+        url: https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
+      - name: t5xxl_fp8_e4m3fn_scaled.safetensors
+        path: models/text_encoders/t5
+        url: https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn_scaled.safetensors
+
+  everything_migrates:
+    nodes:
+      - "https://github.com/yolain/ComfyUI-Easy-Use"
+      - "https://github.com/kijai/ComfyUI-Florence2"
+      - "https://github.com/Gourieff/ComfyUI-ReActor"
+      - "https://github.com/pythongosssss/ComfyUI-Custom-Scripts"
+      - "https://github.com/ltdrdata/ComfyUI-Impact-Pack"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle"
+      - "https://github.com/pythongosssss/ComfyUI-WD14-Tagger"
+      - "https://github.com/kaibioinfo/ComfyUI_AdvancedRefluxControl"
+      - "https://github.com/bollerdominik/ComfyUI-load-lora-from-url"
+      - "https://github.com/ltdrdata/ComfyUI-Impact-Subpack"
+      - "https://github.com/john-mnz/ComfyUI-Inspyrenet-Rembg"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/kijai/ComfyUI-KJNodes"
+      - "https://github.com/shadowcz007/comfyui-mixlab-nodes"
+      - "https://github.com/UmeAiRT/ComfyUI-UmeAiRT-Toolkit"
+      - "https://github.com/ltdrdata/was-node-suite-comfyui"
+      - "https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle_Advance"
+      - "https://github.com/ltdrdata/ComfyUI-Inspire-Pack"
+      - "https://github.com/kijai/ComfyUI-SUPIR"
+      - "https://github.com/Fannovel16/comfyui_controlnet_aux"
+      - "https://github.com/M1kep/ComfyLiterals"
+      - "https://github.com/cubiq/ComfyUI_IPAdapter_plus"
+      - "https://github.com/cubiq/ComfyUI_essentials"
+      - "https://github.com/Acly/comfyui-inpaint-nodes"
+    models:
+      - name: BiRefNet-general-v1.pth
+        path: models/BiRefNet
+        url: https://huggingface.co/ZhengPeng7/BiRefNet/resolve/main/BiRefNet-general-v1.pth
+      - name: SUPIR-v0F_fp16.safetensors
+        path: models/checkpoints/SUPIR
+        url: https://huggingface.co/Kijai/SUPIR_pruned/resolve/main/SUPIR-v0F_fp16.safetensors
+      - name: clip_l.safetensors
+        path: models/clip
+        url: https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors
+      - name: codeformer.pt
+        path: models/facerestore_models
+        url: https://huggingface.co/facefusion/codeformer/resolve/main/codeformer.pth
+      - name: sam_vit_h_4b8939.pt
+        path: models/sams
+        url: https://huggingface.co/ybelkada/segment-anything/resolve/main/checkpoints/sam_vit_h_4b8939.pth
+      - name: sigclip_vision_patch14_384.safetensors
+        path: models/clip_vision
+        url: https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors
+      - name: t5xxl_fp16.safetensors
+        path: models/text_encoders
+        url: https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors
+      - name: t5xxl_fp8_e4m3fn.safetensors
+        path: models/text_encoders
+        url: https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors
+
+  Product_change_background:
+    nodes:
+      - "https://github.com/rgthree/rgthree-comfy"
+      - "https://github.com/chflame163/ComfyUI_LayerStyle_Advance"
+      - "https://github.com/aining2022/ComfyUI_Swwan"
+      - "https://github.com/idrirap/ComfyUI-Lora-Auto-Trigger-Words"
+    
+
 
 # Global settings
 global:

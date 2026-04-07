@@ -162,6 +162,13 @@ if os.path.exists(workflow_repo_path):
     src = f"{workflow_repo_path}/workflows" if os.path.exists(f"{workflow_repo_path}/workflows") else workflow_repo_path
     print(f"--- [SYNC] Syncing workflows from {src} to {dest} ---")
     run(f"cp -v {src}/*.json {dest}/ 2>/dev/null || true")
+    
+    # 5.1 自动同步子图 (Automatic Subgraph Sync)
+    if os.path.exists(f"{src}/subgraphs"):
+        sub_dest = f"{dest}/subgraphs"
+        os.makedirs(sub_dest, exist_ok=True)
+        print(f"--- [SYNC] Automatically syncing subgraphs from {src}/subgraphs ---")
+        run(f"cp -v {src}/subgraphs/*.json {sub_dest}/ 2>/dev/null || true")
 
 # 6. 最终路径审计 (Final Path Audit)
 print("\n--- [AUDIT] Custom Nodes Contents ---")
