@@ -304,18 +304,58 @@ function provisioning_start_server() {
         echo "⚠️ 未能自动提取到 Tunnel URL，请手动查看日志: cat /content/tunnel.log"
     fi
     echo "================================================================="
+
+    # 4. 进入心跳保活阻塞循环（保持 Cell 处于运行状态，防止 Colab 判定为空闲而断连）
+    $VENV_PYTHON - <<'EOF'
+import time
+from datetime import datetime
+
+print("\n--- [HEARTBEAT] ComfyUI 已在后台稳定运行，开始进入保活心跳监听... ---")
+try:
+    while True:
+        # 每隔 60 秒打印一次心跳时间戳，证明该 Cell 活跃中
+        time.sleep(60)
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{now}] 💓 Heartbeat: ComfyUI running & tunnel alive...")
+except KeyboardInterrupt:
+    print("\n[STOP] 手动停止服务保活监听。")
+EOF
 }
 
 # ------------------------------------------------------------------------------
 # 主入口调度
 # ------------------------------------------------------------------------------
 function provisioning_main() {
+    START_FLAG=false
+
+    # 参数解析（支持 --scene <name>、-s <name>、--start 等任意顺序参数）
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --start)
+                START_FLAG=true
+                shift
+                ;;
+            --scene|-s)
+                export SCENE="$2"
+                shift 2
+                ;;
+            --manifest|-m)
+                export MANIFEST_PATH="$2"
+                shift 2
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+
+    echo "--- [CONFIG] 当前生效 SCENE: ${SCENE:-'(未指定，仅加载全局)'} ---"
     provisioning_install_manager
     provisioning_sync_github
     provisioning_run_manifest_logic
 
     # 如果传入参数 --start 或环境变量 START_SERVER=true，则自动启动 ComfyUI 服务与隧道
-    if [ "$1" = "--start" ] || [ "$START_SERVER" = "true" ]; then
+    if [ "$START_FLAG" = "true" ] || [ "$START_SERVER" = "true" ]; then
         provisioning_start_server
     fi
 }
