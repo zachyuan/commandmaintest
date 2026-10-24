@@ -1,186 +1,323 @@
 #!/bin/bash
+# ==============================================================================
+# ComfyUI Colab Provisioning & Auto-Deploy Script
+# Optimized for Google Colab / Linux Cloud Environments
+# ==============================================================================
 
-echo "--- [ENV] Standard/Colab Environment Detected ---"
+set -e
+
+echo "=== [ENV] Initializing ComfyUI Provisioning for Google Colab ==="
 export VENV_PYTHON="python3"
 
-# 平台自适应路径配置
+# 1. 平台自适应路径配置 (优先使用大容量 /content 分区)
 PLATFORM=${PLATFORM:-"colab"}
 if [ "$PLATFORM" = "runpod" ]; then
-    COMFYUI_PATH="/workspace/runpod-slim/ComfyUI"
+    DEFAULT_COMFYUI_PATH="/workspace/runpod-slim/ComfyUI"
+    DEFAULT_MANIFEST_PATH="/workspace/manifest.yaml"
+    DEFAULT_WORKFLOWS_PATH="/workspace/workflows"
 elif [ "$PLATFORM" = "vast" ]; then
-    COMFYUI_PATH="/workspace/ComfyUI"
+    DEFAULT_COMFYUI_PATH="/workspace/ComfyUI"
+    DEFAULT_MANIFEST_PATH="/workspace/manifest.yaml"
+    DEFAULT_WORKFLOWS_PATH="/workspace/workflows"
 elif [ "$PLATFORM" = "colab" ]; then
-    COMFYUI_PATH="/opt/ComfyUI"
+    DEFAULT_COMFYUI_PATH="/content/ComfyUI"
+    DEFAULT_MANIFEST_PATH="/content/manifest.yaml"
+    DEFAULT_WORKFLOWS_PATH="/content/workflows"
 else
-    COMFYUI_PATH="/opt/ComfyUI"
+    DEFAULT_COMFYUI_PATH="/content/ComfyUI"
+    DEFAULT_MANIFEST_PATH="/content/manifest.yaml"
+    DEFAULT_WORKFLOWS_PATH="/content/workflows"
 fi
-export COMFYUI_PATH
 
-# 如果在 Colab 等环境，需要手动补齐目录和基础库
-if [ ! -d "$COMFYUI_PATH" ]; then
-    echo "--- [INIT] Cloning ComfyUI Source ---"
-    git clone https://github.com/comfyanonymous/ComfyUI "$COMFYUI_PATH"
+export COMFYUI_PATH=${COMFYUI_PATH:-"$DEFAULT_COMFYUI_PATH"}
+export MANIFEST_PATH=${MANIFEST_PATH:-"$DEFAULT_MANIFEST_PATH"}
+export WORKFLOWS_PATH=${WORKFLOWS_PATH:-"$DEFAULT_WORKFLOWS_PATH"}
+
+echo "  -> ComfyUI 目标路径: $COMFYUI_PATH"
+echo "  -> Manifest 配置路径: $MANIFEST_PATH"
+
+# 2. 补齐系统依赖 (aria2 用于高速多线程下载)
+if ! command -v aria2c &> /dev/null; then
+    echo "--- [INIT] 安装多线程极速下载器 aria2 ---"
+    apt-get update -qq && apt-get install -y -qq aria2
+fi
+
+# 3. 校验 PyTorch 与 CUDA 加速环境 (Colab 已预装，仅在缺失时补齐)
+if ! $VENV_PYTHON -c "import torch; assert torch.cuda.is_available()" &> /dev/null; then
+    echo "--- [INIT] 未检测到可用 CUDA PyTorch，开始安装 ---"
     $VENV_PYTHON -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+else
+    TORCH_INFO=$($VENV_PYTHON -c 'import torch; print(f"{torch.__version__} | GPU: {torch.cuda.get_device_name(0)}")')
+    echo "--- [ENV] CUDA PyTorch 就绪: $TORCH_INFO ---"
 fi
-# 强制每次运行都校验核心依赖 (Always verify core requirements)
-$VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_PATH/requirements.txt"
-# 确保 Python 业务逻辑运行所需的库
-$VENV_PYTHON -m pip install PyYAML requests
-# fi
 
-function provisioning_start() {
-    echo "--- [START] Provisioning Sequence ---"
-    # provisioning_install_manager
-    provisioning_sync_github
-    provisioning_run_manifest_logic
-    echo "--- [END] Provisioning Sequence Finished ---"
-}
+# 4. 克隆或更新 ComfyUI 核心仓库
+if [ ! -d "$COMFYUI_PATH" ]; then
+    echo "--- [INIT] 克隆 ComfyUI 官方仓库到 $COMFYUI_PATH ---"
+    git clone https://github.com/comfyanonymous/ComfyUI "$COMFYUI_PATH"
+fi
+
+# 5. 校验核心依赖与脚本所需依赖
+echo "--- [INIT] 校验 ComfyUI 核心 Python 依赖 ---"
+$VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_PATH/requirements.txt"
+$VENV_PYTHON -m pip install -q PyYAML requests
+
+# ------------------------------------------------------------------------------
+# 业务函数定义
+# ------------------------------------------------------------------------------
 
 function provisioning_install_manager() {
     if [ ! -d "$COMFYUI_PATH/custom_nodes/ComfyUI-Manager" ]; then
-        echo "--- [INIT] Installing ComfyUI-Manager ---"
+        echo "--- [INIT] 安装 ComfyUI-Manager 节点管理器 ---"
         git clone https://github.com/ltdrdata/ComfyUI-Manager "$COMFYUI_PATH/custom_nodes/ComfyUI-Manager"
     fi
-    # 强制每次运行都校验核心插件依赖 (Ensure requirements always installed)
-    $VENV_PYTHON -m pip install --no-cache-dir -r "$COMFYUI_PATH/custom_nodes/ComfyUI-Manager/requirements.txt"
+    if [ -f "$COMFYUI_PATH/custom_nodes/ComfyUI-Manager/requirements.txt" ]; then
+        $VENV_PYTHON -m pip install --no-cache-dir -q -r "$COMFYUI_PATH/custom_nodes/ComfyUI-Manager/requirements.txt"
+    fi
 }
 
 function provisioning_sync_github() {
-    echo "--- [SYNC] Downloading Manifest & Workflows ---"
+    echo "--- [SYNC] 同步 Manifest 配置文件与私有工作流仓库 ---"
     
-    # 同步 Manifest 配置文件
+    # 同步 Manifest
     if [ ! -z "$MANIFEST_URL" ]; then
-        curl -sL "$MANIFEST_URL" > /opt/manifest.yaml
+        echo "  -> 从远程下载 Manifest: $MANIFEST_URL"
+        mkdir -p "$(dirname "$MANIFEST_PATH")"
+        curl -sL "$MANIFEST_URL" > "$MANIFEST_PATH"
+    elif [ ! -f "$MANIFEST_PATH" ]; then
+        # 兼容自动搜寻可能的挂载或上传路径
+        for candidate in "/opt/manifest.yaml" "/content/config/manifest.yaml" "./config/manifest.yaml" "./manifest.yaml"; do
+            if [ -f "$candidate" ]; then
+                echo "  -> 发现本地候选 Manifest: $candidate，复制到 $MANIFEST_PATH"
+                mkdir -p "$(dirname "$MANIFEST_PATH")"
+                cp "$candidate" "$MANIFEST_PATH"
+                break
+            fi
+        done
     fi
 
-    # 健壮同步私有工作流仓库 (支持 GH_TOKEN)
+    # 同步私有工作流仓库 (支持 GH_TOKEN)
     if [ ! -z "$WORKFLOWS_REPO" ]; then
-        if [ -d "/opt/workflows/.git" ]; then
-            echo "--- [GIT] Pulling latest workflows ---"
-            cd /opt/workflows && git pull
+        mkdir -p "$(dirname "$WORKFLOWS_PATH")"
+        if [ -d "$WORKFLOWS_PATH/.git" ]; then
+            echo "  -> 拉取最新工作流: $WORKFLOWS_PATH"
+            cd "$WORKFLOWS_PATH" && git pull
         else
-            echo "--- [GIT] Cloning private workflows ---"
+            echo "  -> 克隆工作流仓库: $WORKFLOWS_REPO"
             REPO_URL_CLEAN=$(echo "$WORKFLOWS_REPO" | sed 's|https://||')
             if [ ! -z "$GH_TOKEN" ]; then
-                git clone "https://${GH_TOKEN}@${REPO_URL_CLEAN}" /opt/workflows
+                git clone "https://${GH_TOKEN}@${REPO_URL_CLEAN}" "$WORKFLOWS_PATH"
             else
-                git clone "$WORKFLOWS_REPO" /opt/workflows
+                git clone "$WORKFLOWS_REPO" "$WORKFLOWS_PATH"
             fi
         fi
     fi
 }
 
 function provisioning_run_manifest_logic() {
-    echo "--- [JSON] Running Dynamic Asset Installer ---"
+    echo "--- [ASSETS] 执行动态资产与节点装载逻辑 ---"
     
-    # 使用引号保护的 EOF 阻止 Shell 盲目展开，内部使用 sys.executable 确保 100% 环境对齐
     $VENV_PYTHON - <<'EOF'
-import yaml, os, subprocess, sys
+import os
+import sys
+import yaml
+import subprocess
 
-def run(cmd):
+def run_cmd(cmd):
     print(f"Executing: {cmd}")
-    # 强制让内部调用也使用指定的 VENV_PYTHON 解释器
     if cmd.startswith("pip"):
-        venv_python = os.environ.get('VENV_PYTHON')
+        venv_python = os.environ.get('VENV_PYTHON', sys.executable)
         cmd = f"\"{venv_python}\" -m {cmd}"
     result = subprocess.run(cmd, shell=True)
     return result.returncode
 
-manifest_path = "/opt/manifest.yaml"
-comfyui_path = os.environ.get('COMFYUI_PATH', '/opt/ComfyUI')
+manifest_path = os.environ.get('MANIFEST_PATH', '/content/manifest.yaml')
+comfyui_path = os.environ.get('COMFYUI_PATH', '/content/ComfyUI')
+workflow_repo_path = os.environ.get('WORKFLOWS_PATH', '/content/workflows')
 
 if not os.path.exists(manifest_path):
-    print("Manifest not found, skipping asset loading.")
-    exit(0)
+    # 尝试后备路径
+    for fb in ["/opt/manifest.yaml", "config/manifest.yaml", "manifest.yaml"]:
+        if os.path.exists(fb):
+            manifest_path = fb
+            break
 
-with open(manifest_path, 'r') as f:
-    manifest = yaml.safe_load(f)
+if not os.path.exists(manifest_path):
+    print(f"⚠️ [WARN] 未找到 Manifest 配置文件 ({manifest_path})，跳过自动化节点与模型拉取。")
+    sys.exit(0)
+
+print(f"📖 [MANIFEST] 正在加载配置文件: {manifest_path}")
+with open(manifest_path, 'r', encoding='utf-8') as f:
+    manifest = yaml.safe_load(f) or {}
 
 scene_name = os.environ.get('SCENE', 'default')
+available_scenes = list(manifest.get('scenes', {}).keys()) if manifest.get('scenes') else []
 scene = manifest.get('scenes', {}).get(scene_name, {})
 
-# 1. 资源合并 (Asset Merging)
-global_nodes = manifest.get('global', {}).get('nodes', [])
-global_models = manifest.get('global', {}).get('models', [])
-global_pips = manifest.get('global', {}).get('pips', [])
-scene_nodes = scene.get('nodes', []) if scene else []
-scene_models = scene.get('models', []) if scene else []
-scene_pips = scene.get('pips', []) if scene else []
+if scene_name not in manifest.get('scenes', {}):
+    if scene_name != 'default':
+        print(f"⚠️ [WARN] 指定的场景 '{scene_name}' 不存在于 manifest.yaml 中！")
+    print(f"ℹ️ [INFO] 当前可用 scenes 列表: {available_scenes}")
+    print("ℹ️ [INFO] 本次仅加载 global 全局节点与模型。若需加载特定场景，请设置环境变量: export SCENE=<scene_name>")
+else:
+    print(f"🎯 [SCENE] 成功匹配场景 Profile: '{scene_name}'")
 
-all_nodes = (global_nodes or []) + (scene_nodes or [])
-all_models = (global_models or []) + (scene_models or [])
-all_pips = (global_pips or []) + (scene_pips or [])
+# 1. 资产合并
+global_nodes = manifest.get('global', {}).get('nodes', []) or []
+global_models = manifest.get('global', {}).get('models', []) or []
+global_pips = manifest.get('global', {}).get('pips', []) or []
 
-# 2. 自动安装插件节点 (Node Setup)
+scene_nodes = scene.get('nodes', []) or []
+scene_models = scene.get('models', []) or []
+scene_pips = scene.get('pips', []) or []
+
+all_nodes = global_nodes + scene_nodes
+all_models = global_models + scene_models
+all_pips = global_pips + scene_pips
+
+# 2. 自动安装插件节点 (Custom Nodes)
+print(f"\n--- [NODES] 开始安装自定义插件节点 (共 {len(all_nodes)} 个) ---")
 for node in all_nodes:
     try:
         url, version = "", "main"
-        if isinstance(node, str): url = node
+        if isinstance(node, str):
+            url = node
         elif isinstance(node, dict):
-            url = node.get('url')
+            url = node.get('url', '')
             version = node.get('version', 'main')
-            
+
         if url and url.startswith("http"):
             name = url.split("/")[-1].replace(".git", "")
             path = f"{comfyui_path}/custom_nodes/{name}"
             if not os.path.exists(path):
-                run(f"git clone -b {version} {url} {path}")
-            
-            # 无论是否已克隆，都强制校验依赖 (Ensure deps are checked every time)
-            if os.path.exists(f"{path}/requirements.txt"):
-                run(f"pip install --no-cache-dir -r {path}/requirements.txt")
-    except Exception as e:
-        print(f"Unexpected error for node {node}: {e}, skipping.")
+                print(f"  [+] 克隆插件: {name} (分支/版本: {version})")
+                run_cmd(f"git clone -b {version} {url} {path}")
+            else:
+                print(f"  [*] 插件已存在，跳过克隆: {name}")
 
-# 3. 自动下载模型 (Model Setup)
+            # 校验并安装节点独立依赖
+            req_file = f"{path}/requirements.txt"
+            if os.path.exists(req_file):
+                run_cmd(f"pip install --no-cache-dir -r {req_file}")
+    except Exception as e:
+        print(f"❌ 安装节点 {node} 出现异常: {e}")
+
+# 3. 自动下载模型 (Models Download via aria2c)
+print(f"\n--- [MODELS] 开始下载模型权重文件 (共 {len(all_models)} 个) ---")
 hf_token = os.environ.get('HF_TOKEN', manifest.get('global', {}).get('hf_token', ''))
 header = f'--header="Authorization: Bearer {hf_token}"' if hf_token else ''
 
 for model in all_models:
     try:
-        url, name = model.get('url'), model.get('name')
-        dest_dir = f"{comfyui_path}/{model['path']}"
-        os.makedirs(dest_dir, exist_ok=True)
-        if not os.path.exists(f"{dest_dir}/{name}"):
-            cmd = f'aria2c -x16 -s16 -k1M -o "{name}" -d "{dest_dir}" {header} "{url}"'
-            run(cmd)
-    except Exception as e:
-        print(f"❌ Error processing model {model.get('name', 'unknown')}: {e}")
+        url = model.get('url')
+        name = model.get('name')
+        rel_path = model.get('path', 'models/checkpoints')
+        if not url or not name:
+            continue
 
-# 4. 自动安装 Python 包 (Pip Setup)
-for package in all_pips:
-    try:
-        run(f"pip install {package}")
+        dest_dir = f"{comfyui_path}/{rel_path}"
+        dest_file = f"{dest_dir}/{name}"
+        os.makedirs(dest_dir, exist_ok=True)
+
+        if not os.path.exists(dest_file):
+            print(f"  [↓] 正在通过 aria2c 下载: {name} -> {rel_path}")
+            cmd = f'aria2c -c -x16 -s16 -k1M --summary-interval=10 --allow-overwrite=true -o "{name}" -d "{dest_dir}" {header} "{url}"'
+            run_cmd(cmd)
+        else:
+            print(f"  [*] 模型已存在，跳过下载: {name}")
     except Exception as e:
-        print(f"❌ Error installing pip package {package}: {e}")
+        print(f"❌ 下载模型 {model.get('name', 'unknown')} 出现异常: {e}")
+
+# 4. 自动安装 Python 第三方包
+if all_pips:
+    print(f"\n--- [PIPS] 安装场景指定 Python 库: {all_pips} ---")
+    for package in all_pips:
+        try:
+            run_cmd(f"pip install {package}")
+        except Exception as e:
+            print(f"❌ 安装 Python 包 {package} 出现异常: {e}")
 
 # 5. 同步工作流 (Workflow Sync)
-workflow_repo_path = "/opt/workflows"
 if os.path.exists(workflow_repo_path):
     dest = f"{comfyui_path}/user/default/workflows"
     os.makedirs(dest, exist_ok=True)
     src = f"{workflow_repo_path}/workflows" if os.path.exists(f"{workflow_repo_path}/workflows") else workflow_repo_path
-    print(f"--- [SYNC] Syncing workflows from {src} to {dest} ---")
-    run(f"cp -v {src}/*.json {dest}/ 2>/dev/null || true")
-    
-    # 5.1 自动同步子图 (Automatic Subgraph Sync)
+    print(f"\n--- [SYNC] 同步工作流从 {src} 到 {dest} ---")
+    run_cmd(f"cp -v {src}/*.json {dest}/ 2>/dev/null || true")
+
     if os.path.exists(f"{src}/subgraphs"):
         sub_dest = f"{dest}/subgraphs"
         os.makedirs(sub_dest, exist_ok=True)
-        print(f"--- [SYNC] Automatically syncing subgraphs from {src}/subgraphs ---")
-        run(f"cp -v {src}/subgraphs/*.json {sub_dest}/ 2>/dev/null || true")
+        run_cmd(f"cp -v {src}/subgraphs/*.json {sub_dest}/ 2>/dev/null || true")
 
-# 6. 最终路径审计 (Final Path Audit)
-print("\n--- [AUDIT] Custom Nodes Contents ---")
-if os.path.exists(f"{comfyui_path}/custom_nodes"):
-    print(os.listdir(f"{comfyui_path}/custom_nodes"))
+# 6. 最终路径审计
+print("\n--- [AUDIT] 已安装 Custom Nodes 列表 ---")
+nodes_dir = f"{comfyui_path}/custom_nodes"
+if os.path.exists(nodes_dir):
+    installed_nodes = os.listdir(nodes_dir)
+    print(f"总计 {len(installed_nodes)} 个节点插件: {installed_nodes}")
 else:
-    print(f"WARNING: {comfyui_path}/custom_nodes NOT FOUND")
+    print(f"⚠️ 未找到 custom_nodes 目录")
 EOF
-
-    # 最终汇总
-    echo "--- [AUDIT] System Check Finished ---"
+    echo "--- [END] Provisioning 装机流程执行完成 ---"
 }
 
-# 执行主流程
-provisioning_start
+function provisioning_start_server() {
+    echo "=== [SERVICE] 启动 ComfyUI 与 Cloudflare 穿透服务 ==="
+    
+    # 1. 确保安装 cloudflared
+    if ! command -v cloudflared &> /dev/null; then
+        echo "--- [INIT] 下载 Cloudflared 客户端 ---"
+        curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
+        chmod +x /usr/local/bin/cloudflared
+    fi
+
+    # 2. 后台启动 ComfyUI
+    echo "--- [BOOT] 正在后台启动 ComfyUI (端口 8188) ---"
+    nohup $VENV_PYTHON "$COMFYUI_PATH/main.py" --listen 0.0.0.0 --port 8188 --preview-method auto > /content/comfyui.log 2>&1 &
+    COMFY_PID=$!
+    echo "ComfyUI 已启动，PID: $COMFY_PID (日志记录在 /content/comfyui.log)"
+    
+    sleep 4
+
+    # 3. 启动 Cloudflare Tunnel 穿透
+    echo "--- [TUNNEL] 正在通过 Cloudflare Tunnel 建立公网 HTTPS 隧道 ---"
+    rm -f /content/tunnel.log
+    nohup cloudflared tunnel --url http://127.0.0.1:8188 > /content/tunnel.log 2>&1 &
+    
+    echo "等待公网 URL 生成..."
+    TUNNEL_URL=""
+    for i in {1..30}; do
+        sleep 1
+        TUNNEL_URL=$(grep -oE "https://[a-zA-Z0-9-]+\.trycloudflare\.com" /content/tunnel.log | head -n 1 || true)
+        if [ ! -z "$TUNNEL_URL" ]; then
+            break
+        fi
+    done
+
+    echo "================================================================="
+    if [ ! -z "$TUNNEL_URL" ]; then
+        echo "🎉 ComfyUI 远程公网服务已就绪！"
+        echo "👉 访问与 API 端点 URL: $TUNNEL_URL"
+        echo "💡 本地调用测试: curl $TUNNEL_URL/system_stats"
+    else
+        echo "⚠️ 未能自动提取到 Tunnel URL，请手动查看日志: cat /content/tunnel.log"
+    fi
+    echo "================================================================="
+}
+
+# ------------------------------------------------------------------------------
+# 主入口调度
+# ------------------------------------------------------------------------------
+function provisioning_main() {
+    provisioning_install_manager
+    provisioning_sync_github
+    provisioning_run_manifest_logic
+
+    # 如果传入参数 --start 或环境变量 START_SERVER=true，则自动启动 ComfyUI 服务与隧道
+    if [ "$1" = "--start" ] || [ "$START_SERVER" = "true" ]; then
+        provisioning_start_server
+    fi
+}
+
+provisioning_main "$@"
