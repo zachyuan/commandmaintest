@@ -266,11 +266,11 @@ function provisioning_start_server() {
     echo "=== [SERVICE] 启动 ComfyUI 与 Cloudflare 穿透服务 ==="
     
     # 1. 确保安装 cloudflared
-    if ! command -v cloudflared &> /dev/null; then
-        echo "--- [INIT] 下载 Cloudflared 客户端 ---"
-        curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
-        chmod +x /usr/local/bin/cloudflared
-    fi
+    # if ! command -v cloudflared &> /dev/null; then
+    #     echo "--- [INIT] 下载 Cloudflared 客户端 ---"
+    #     curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
+    #     chmod +x /usr/local/bin/cloudflared
+    # fi
 
     # 2. 后台启动 ComfyUI
     echo "--- [BOOT] 正在后台启动 ComfyUI (端口 8188) ---"
@@ -281,29 +281,34 @@ function provisioning_start_server() {
     sleep 4
 
     # 3. 启动 Cloudflare Tunnel 穿透
-    echo "--- [TUNNEL] 正在通过 Cloudflare Tunnel 建立公网 HTTPS 隧道 ---"
-    rm -f /content/tunnel.log
-    nohup cloudflared tunnel --url http://127.0.0.1:8188 > /content/tunnel.log 2>&1 &
+    # echo "--- [TUNNEL] 正在通过 Cloudflare Tunnel 建立公网 HTTPS 隧道 ---"
+    # rm -f /content/tunnel.log
+    # nohup cloudflared tunnel --url http://127.0.0.1:8188 > /content/tunnel.log 2>&1 &
     
-    echo "等待公网 URL 生成..."
-    TUNNEL_URL=""
-    for i in {1..30}; do
-        sleep 1
-        TUNNEL_URL=$(grep -oE "https://[a-zA-Z0-9-]+\.trycloudflare\.com" /content/tunnel.log | head -n 1 || true)
-        if [ ! -z "$TUNNEL_URL" ]; then
-            break
-        fi
-    done
+    # echo "等待公网 URL 生成..."
+    # TUNNEL_URL=""
+    # for i in {1..30}; do
+    #     sleep 1
+    #     TUNNEL_URL=$(grep -oE "https://[a-zA-Z0-9-]+\.trycloudflare\.com" /content/tunnel.log | head -n 1 || true)
+    #     if [ ! -z "$TUNNEL_URL" ]; then
+    #         break
+    #     fi
+    # done
 
+    # echo "================================================================="
+    # if [ ! -z "$TUNNEL_URL" ]; then
+    #     echo "🎉 ComfyUI 远程公网服务已就绪！"
+    #     echo "👉 访问与 API 端点 URL: $TUNNEL_URL"
+    #     echo "💡 本地调用测试: curl $TUNNEL_URL/system_stats"
+    # else
+    #     echo "⚠️ 未能自动提取到 Tunnel URL，请手动查看日志: cat /content/tunnel.log"
+    # fi
     echo "================================================================="
-    if [ ! -z "$TUNNEL_URL" ]; then
-        echo "🎉 ComfyUI 远程公网服务已就绪！"
-        echo "👉 访问与 API 端点 URL: $TUNNEL_URL"
-        echo "💡 本地调用测试: curl $TUNNEL_URL/system_stats"
-    else
-        echo "⚠️ 未能自动提取到 Tunnel URL，请手动查看日志: cat /content/tunnel.log"
-    fi
+    echo "🎉 ComfyUI 远程服务已在后台就绪 (端口 8188)！"
+    echo "👉 你的固定 ngrok 访问地址: https://delicate-unpainted-activate.ngrok-free.dev"
+    echo "💡 本地测试: curl https://delicate-unpainted-activate.ngrok-free.dev/system_stats"
     echo "================================================================="
+
 
     # 4. 进入心跳保活阻塞循环（保持 Cell 处于运行状态，防止 Colab 判定为空闲而断连）
     $VENV_PYTHON - <<'EOF'
